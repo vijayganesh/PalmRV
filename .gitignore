@@ -1,0 +1,19 @@
+*.class
+*.log
+.bloop/
+.metals/
+.vscode/
+project/
+target/
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+.metals/metals.mv.db
+.metals/metals.mv.db
+project/build.properties
+build/
+*.vcd
+*.dot
+*.png
+*.html
+*.svg
+*.db
