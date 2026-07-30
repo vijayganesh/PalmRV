@@ -44,6 +44,9 @@ class MemoryStage extends Module {
     val reg_write_out = Output(Bool())
     val valid_out = Output(Bool())
     
+    // Combinational forwarding data
+    val forward_data_out = Output(UInt(32.W))
+    
     // CSR outputs
     val mret_out = Output(Bool())
     
@@ -103,6 +106,8 @@ class MemoryStage extends Module {
     2.U -> io.pc_plus_4_in,
     3.U -> io.csr_rdata
   ))
+  
+  io.forward_data_out := wb_data
   
   // Pipeline registers
   val wb_data_reg = RegInit(0.U(32.W))

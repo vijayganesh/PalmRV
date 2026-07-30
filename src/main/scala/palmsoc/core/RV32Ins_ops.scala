@@ -52,5 +52,11 @@ object RV32Instructions {
  */
 object ALUOp extends ChiselEnum {
   val ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA, COPY_A, COPY_B = Value
+  
+  // M Extension
+  val MUL, MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU = Value
+  
+  // B Extension (Basic Zba/Zbb subset)
+  val ANDN, ORN, XNOR, CLZ, CTZ, CPOP, MAX, MAXU, MIN, MINU = Value
 }
 

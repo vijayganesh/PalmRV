@@ -17,4 +17,5 @@ build/
 *.html
 *.svg
 *.db
+*.md
 palmRV.code-workspace

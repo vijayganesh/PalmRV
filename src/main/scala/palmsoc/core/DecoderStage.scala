@@ -8,7 +8,7 @@ import chisel3.util._
  * 
  * Decodes instructions, reads register file, and generates control signals.
  */
-class DecodeStage extends Module {
+class DecodeStage(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCConfig()) extends Module {
   val io = IO(new Bundle {
     // Input from fetch
     val instruction = Input(UInt(32.W))
@@ -25,6 +25,8 @@ class DecodeStage extends Module {
     val pc_out = Output(UInt(32.W))
     val rs1_data_out = Output(UInt(32.W))
     val rs2_data_out = Output(UInt(32.W))
+    val rs1_addr_out = Output(UInt(5.W))
+    val rs2_addr_out = Output(UInt(5.W))
     val imm = Output(UInt(32.W))
     val rd_addr = Output(UInt(5.W))
     val alu_op = Output(ALUOp())
@@ -106,7 +108,17 @@ class DecodeStage extends Module {
         is(RV32Instructions.FUNCT3_XOR) { alu_op := ALUOp.XOR }
         is(RV32Instructions.FUNCT3_OR) { alu_op := ALUOp.OR }
         is(RV32Instructions.FUNCT3_AND) { alu_op := ALUOp.AND }
-        is(RV32Instructions.FUNCT3_SLL) { alu_op := ALUOp.SLL }
+        is(RV32Instructions.FUNCT3_SLL) { 
+          when(config.enableBExtension.B && funct7 === 0x30.U) {
+            switch(rs2) {
+              is(0.U) { alu_op := ALUOp.CLZ }
+              is(1.U) { alu_op := ALUOp.CTZ }
+              is(2.U) { alu_op := ALUOp.CPOP }
+            }
+          }.otherwise {
+            alu_op := ALUOp.SLL 
+          }
+        }
         is(RV32Instructions.FUNCT3_SRL_SRA) {
           alu_op := Mux(inst(30), ALUOp.SRA, ALUOp.SRL)
         }
@@ -117,19 +129,51 @@ class DecodeStage extends Module {
       reg_write := true.B
       alu_src2_sel := false.B  // use rs2
       
-      val is_sub = funct7(5)
-      switch(funct3) {
-        is(RV32Instructions.FUNCT3_ADD_SUB) {
-          alu_op := Mux(is_sub, ALUOp.SUB, ALUOp.ADD)
+      when(config.enableMExtension.B && funct7 === 1.U) {
+        // M-Extension
+        switch(funct3) {
+          is(0.U) { alu_op := ALUOp.MUL }
+          is(1.U) { alu_op := ALUOp.MULH }
+          is(2.U) { alu_op := ALUOp.MULHSU }
+          is(3.U) { alu_op := ALUOp.MULHU }
+          is(4.U) { alu_op := ALUOp.DIV }
+          is(5.U) { alu_op := ALUOp.DIVU }
+          is(6.U) { alu_op := ALUOp.REM }
+          is(7.U) { alu_op := ALUOp.REMU }
         }
-        is(RV32Instructions.FUNCT3_SLT) { alu_op := ALUOp.SLT }
-        is(RV32Instructions.FUNCT3_SLTU) { alu_op := ALUOp.SLTU }
-        is(RV32Instructions.FUNCT3_XOR) { alu_op := ALUOp.XOR }
-        is(RV32Instructions.FUNCT3_OR) { alu_op := ALUOp.OR }
-        is(RV32Instructions.FUNCT3_AND) { alu_op := ALUOp.AND }
-        is(RV32Instructions.FUNCT3_SLL) { alu_op := ALUOp.SLL }
-        is(RV32Instructions.FUNCT3_SRL_SRA) {
-          alu_op := Mux(funct7(5), ALUOp.SRA, ALUOp.SRL)
+      }.elsewhen(config.enableBExtension.B && funct7 === 0x20.U) {
+        // Zbb logical with negate & base SUB/SRA
+        switch(funct3) {
+          is(RV32Instructions.FUNCT3_AND) { alu_op := ALUOp.ANDN }
+          is(RV32Instructions.FUNCT3_OR) { alu_op := ALUOp.ORN }
+          is(RV32Instructions.FUNCT3_XOR) { alu_op := ALUOp.XNOR }
+          is(RV32Instructions.FUNCT3_ADD_SUB) { alu_op := ALUOp.SUB }
+          is(RV32Instructions.FUNCT3_SRL_SRA) { alu_op := ALUOp.SRA }
+        }
+      }.elsewhen(config.enableBExtension.B && funct7 === 0x05.U) {
+        // Zbb min/max
+        switch(funct3) {
+          is(4.U) { alu_op := ALUOp.MIN }
+          is(5.U) { alu_op := ALUOp.MAX }
+          is(6.U) { alu_op := ALUOp.MINU }
+          is(7.U) { alu_op := ALUOp.MAXU }
+        }
+      }.otherwise {
+        // Base RV32I
+        val is_sub = funct7(5)
+        switch(funct3) {
+          is(RV32Instructions.FUNCT3_ADD_SUB) {
+            alu_op := Mux(is_sub, ALUOp.SUB, ALUOp.ADD)
+          }
+          is(RV32Instructions.FUNCT3_SLT) { alu_op := ALUOp.SLT }
+          is(RV32Instructions.FUNCT3_SLTU) { alu_op := ALUOp.SLTU }
+          is(RV32Instructions.FUNCT3_XOR) { alu_op := ALUOp.XOR }
+          is(RV32Instructions.FUNCT3_OR) { alu_op := ALUOp.OR }
+          is(RV32Instructions.FUNCT3_AND) { alu_op := ALUOp.AND }
+          is(RV32Instructions.FUNCT3_SLL) { alu_op := ALUOp.SLL }
+          is(RV32Instructions.FUNCT3_SRL_SRA) {
+            alu_op := Mux(funct7(5), ALUOp.SRA, ALUOp.SRL)
+          }
         }
       }
     }
@@ -232,6 +276,8 @@ class DecodeStage extends Module {
   val pc_reg = RegInit(0.U(32.W))
   val rs1_data_reg = RegInit(0.U(32.W))
   val rs2_data_reg = RegInit(0.U(32.W))
+  val rs1_addr_reg = RegInit(0.U(5.W))
+  val rs2_addr_reg = RegInit(0.U(5.W))
   val imm_reg = RegInit(0.U(32.W))
   val rd_addr_reg = RegInit(0.U(5.W))
   val alu_op_reg = RegInit(ALUOp.ADD)
@@ -266,6 +312,8 @@ class DecodeStage extends Module {
     pc_reg := io.pc_in
     rs1_data_reg := io.rs1_data
     rs2_data_reg := io.rs2_data
+    rs1_addr_reg := rs1
+    rs2_addr_reg := rs2
     imm_reg := imm_out
     rd_addr_reg := rd
     alu_op_reg := alu_op
@@ -291,6 +339,8 @@ class DecodeStage extends Module {
   io.pc_out := pc_reg
   io.rs1_data_out := rs1_data_reg
   io.rs2_data_out := rs2_data_reg
+  io.rs1_addr_out := rs1_addr_reg
+  io.rs2_addr_out := rs2_addr_reg
   io.imm := imm_reg
   io.rd_addr := rd_addr_reg
   io.alu_op := alu_op_reg

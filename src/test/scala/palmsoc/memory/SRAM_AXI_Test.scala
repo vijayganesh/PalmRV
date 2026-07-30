@@ -208,7 +208,9 @@ class SRAM_AXI_Test extends AnyFunSpec with ChiselSim {
         dut.io.axi.wvalid.poke(false.B)
         
         dut.io.axi.bready.poke(true.B)
-        dut.clock.step(1)
+        while(!dut.io.axi.bvalid.peek().litToBoolean) {
+          dut.clock.step(1)
+        }
         dut.io.axi.bvalid.expect(true.B)
         dut.io.axi.bresp.expect(AXI4LiteResp.SLVERR)  // Should get error
         dut.io.axi.bready.poke(false.B)
@@ -221,7 +223,9 @@ class SRAM_AXI_Test extends AnyFunSpec with ChiselSim {
         dut.io.axi.arvalid.poke(false.B)
         
         dut.io.axi.rready.poke(true.B)
-        dut.clock.step(1)
+        while(!dut.io.axi.rvalid.peek().litToBoolean) {
+          dut.clock.step(1)
+        }
         dut.io.axi.rvalid.expect(true.B)
         dut.io.axi.rresp.expect(AXI4LiteResp.SLVERR)  // Should get error
         dut.io.axi.rready.poke(false.B)

@@ -18,7 +18,8 @@ import chisel3.experimental.Analog
 case class ConfigurablePalmSoCConfig(
   hasGPIO: Boolean = true,
   hasUART: Boolean = true,
-  hasI2C: Boolean = true
+  hasI2C: Boolean = true,
+  coreConfig: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCConfig()
 )
 
 /**
@@ -113,7 +114,7 @@ class ConfigurablePalmSoC(
   }
   
   // 1. Instantiate the CPU Core
-  val core = Module(new RV32Core)
+  val core = Module(new RV32Core(socConfig.coreConfig))
   io.pc := core.io.imem_addr
   io.instruction := core.io.imem_data
   

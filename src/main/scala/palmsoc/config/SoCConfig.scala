@@ -284,6 +284,10 @@ case class SoCConfig(
   // Core Configuration
   xlen: Int = 32,
   
+  // ISA Extensions
+  enableMExtension: Boolean = false,   // Multiply/Divide
+  enableBExtension: Boolean = false,   // Bit Manipulation
+  
   // Memory Sizes (actual implemented sizes, not address space)
   bootROMSize: Int = 64 * 1024,        // 64 KB
   flashSize: Int = 16 * 1024 * 1024,   // 16 MB (of 256 MB address space)
