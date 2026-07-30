@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 import palmsoc.core.RV32Core
 import palmsoc.memory.{BootROM_AXI, SRAM_AXI}
-import palmsoc.peripheral.{GPIO_AXI, UART_AXI, I2C_AXI}
+import palmsoc.peripheral.{GPIO_AXI, UART_AXI, I2C_AXI, DMA_AXI}
 import palmsoc.interrupt.InterruptController
 import palmsoc.bus.PalmVMainInterconnect
 import palmsoc.bus.PalmVPeripheralInterconnect
@@ -142,13 +142,14 @@ class ConfigurablePalmSoC(
   // Slave 4: Accelerator Sub-Crossbar
   acceleratorXbar.io.masters(0) <> mainXbar.io.slaves(4)
   
-  // Slaves 5, 6, 7: DMA, Interrupts, Debug (Tied off)
-  tieOffSlave(mainXbar.io.slaves(5))
+  // Slave 5: DMA Controller Configuration Port
+  val dma = Module(new DMA_AXI(axiConfig, 4))
+  connectAxi(dma.io.axi_slave, mainXbar.io.slaves(5))
   
   // Slave 6: Interrupt Controller
-  val intc = Module(new InterruptController(axiConfig, 4))
+  val intc = Module(new InterruptController(axiConfig, 5))
   connectAxi(intc.io.axi, mainXbar.io.slaves(6))
-  intc.io_interrupts := Cat(lstm_intr, gpio_intr, i2c_intr, uart_intr)
+  intc.io_interrupts := Cat(lstm_intr, dma.io.interrupt, gpio_intr, i2c_intr, uart_intr)
   core.io.external_interrupt := intc.io_ext_int
   
   tieOffSlave(mainXbar.io.slaves(7))
@@ -219,8 +220,8 @@ class ConfigurablePalmSoC(
   
   // CPU Master
   val cpuAxi = mainXbar.io.masters(0)
-  // DMA Master (Tied off)
-  mainXbar.io.masters(1).tieOff()
+  // DMA Master
+  mainXbar.io.masters(1) <> dma.io.axi_master
   
   val sBridgeIdle :: sBridgeImemRead :: sBridgeImemWait :: sBridgeDmemWriteAddr :: sBridgeDmemWriteData :: sBridgeDmemWriteResp :: sBridgeDmemReadAddr :: sBridgeDmemReadData :: Nil = Enum(8)
   val bridgeState = RegInit(sBridgeIdle)
