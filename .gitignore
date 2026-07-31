@@ -19,3 +19,4 @@ build/
 *.db
 *.md
 palmRV.code-workspace
+fpga/
