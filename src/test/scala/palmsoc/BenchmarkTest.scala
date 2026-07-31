@@ -44,5 +44,22 @@ class BenchmarkTest extends AnyFunSpec with ChiselSim {
         println(s"Simulated $cycles cycles.")
       }
     }
+
+    it("should run coremark benchmark program") {
+      val coreConfig = SoCConfig(enableMExtension = true)
+      val socConfig = ConfigurablePalmSoCConfig(coreConfig = coreConfig)
+      
+      val hexPath = "benchmarks/coremark/coremark.hex"
+      val initContent = BootROM.loadHexFile(hexPath)
+      
+      simulate(new ConfigurablePalmSoC(socConfig, Some(initContent))) { dut =>
+        var cycles = 0
+        while (cycles < 1500000) {
+          dut.clock.step(1000)
+          cycles += 1000
+        }
+        println(s"Simulated $cycles cycles.")
+      }
+    }
   }
 }
