@@ -250,7 +250,7 @@ class ConfigurablePalmSoC(
   // DMA Master
   connectAxiMaster(dma.io.axi_master, mainXbar.io.masters(1))
   
-  val sBridgeIdle :: sBridgeImemRead :: sBridgeImemWait :: sBridgeDmemWriteAddr :: sBridgeDmemWriteData :: sBridgeDmemWriteResp :: sBridgeDmemReadAddr :: sBridgeDmemReadData :: Nil = Enum(8)
+  val sBridgeIdle :: sBridgeImemRead :: sBridgeImemWait :: sBridgeImemDeliver :: sBridgeDmemWriteAddr :: sBridgeDmemWriteData :: sBridgeDmemWriteResp :: sBridgeDmemReadAddr :: sBridgeDmemReadData :: sBridgeDmemDeliver :: Nil = Enum(10)
   val bridgeState = RegInit(sBridgeIdle)
   
   // AXI address and write registers
@@ -273,10 +273,16 @@ class ConfigurablePalmSoC(
   cpuAxi.ar.arvalid := false.B
   cpuAxi.r.rready := false.B
   
-  core.io.imem_data := 0.U
-  core.io.imem_valid := false.B
-  core.io.dmem_rdata := 0.U
-  core.io.dmem_valid := false.B
+  // Pipelined valid/data registers to break combinatorial control path
+  val core_imem_valid_reg = RegInit(false.B)
+  val core_imem_data_reg = Reg(UInt(32.W))
+  val core_dmem_valid_reg = RegInit(false.B)
+  val core_dmem_rdata_reg = Reg(UInt(32.W))
+  
+  core.io.imem_data := core_imem_data_reg
+  core.io.imem_valid := core_imem_valid_reg
+  core.io.dmem_rdata := core_dmem_rdata_reg
+  core.io.dmem_valid := core_dmem_valid_reg
   
   switch(bridgeState) {
     is(sBridgeIdle) {
@@ -327,30 +333,36 @@ class ConfigurablePalmSoC(
           // Address branched/flushed during this AXI read; discard stale instruction response and re-fetch from new PC
           bridgeState := sBridgeIdle
         }.otherwise {
-          core.io.imem_data := cpuAxi.r.rdata
-          core.io.imem_valid := true.B
-          
-          // Immediately examine data memory transactions
-          when(core.io.dmem_write) {
-            dmem_addr_reg := core.io.dmem_addr
-            dmem_wdata_reg := core.io.dmem_wdata
-            
-            val strb = WireDefault(0xF.U(4.W))
-            switch(core.io.dmem_size) {
-              is(0.U) { strb := (1.U << core.io.dmem_addr(1, 0)) }
-              is(1.U) { strb := (3.U << (core.io.dmem_addr(1) << 1)) }
-              is(2.U) { strb := 0xF.U }
-            }
-            dmem_strb_reg := strb
-            bridgeState := sBridgeDmemWriteAddr
-          }.elsewhen(core.io.dmem_read) {
-            dmem_addr_reg := core.io.dmem_addr
-            bridgeState := sBridgeDmemReadAddr
-          }.otherwise {
-            // Normal sequential instruction step
-            bridgeState := sBridgeIdle
-          }
+          core_imem_data_reg := cpuAxi.r.rdata
+          core_imem_valid_reg := true.B
+          bridgeState := sBridgeImemDeliver
         }
+      }
+    }
+    
+    is(sBridgeImemDeliver) {
+      core_imem_valid_reg := false.B
+      
+      // Immediately examine data memory transactions that might have been triggered 
+      // by the now-valid instruction (or previous instructions)
+      when(core.io.dmem_write) {
+        dmem_addr_reg := core.io.dmem_addr
+        dmem_wdata_reg := core.io.dmem_wdata
+        
+        val strb = WireDefault(0xF.U(4.W))
+        switch(core.io.dmem_size) {
+          is(0.U) { strb := (1.U << core.io.dmem_addr(1, 0)) }
+          is(1.U) { strb := (3.U << (core.io.dmem_addr(1) << 1)) }
+          is(2.U) { strb := 0xF.U }
+        }
+        dmem_strb_reg := strb
+        bridgeState := sBridgeDmemWriteAddr
+      }.elsewhen(core.io.dmem_read) {
+        dmem_addr_reg := core.io.dmem_addr
+        bridgeState := sBridgeDmemReadAddr
+      }.otherwise {
+        // Normal sequential instruction step
+        bridgeState := sBridgeIdle
       }
     }
     
@@ -377,9 +389,9 @@ class ConfigurablePalmSoC(
       cpuAxi.b.bready := true.B
       
       when(cpuAxi.b.bvalid) {
-        core.io.dmem_valid := true.B
+        core_dmem_valid_reg := true.B
         dmem_just_completed := true.B
-        bridgeState := sBridgeIdle
+        bridgeState := sBridgeDmemDeliver
       }
     }
     
@@ -396,11 +408,16 @@ class ConfigurablePalmSoC(
       cpuAxi.r.rready := true.B
       
       when(cpuAxi.r.rvalid) {
-        core.io.dmem_rdata := cpuAxi.r.rdata
-        core.io.dmem_valid := true.B
+        core_dmem_rdata_reg := cpuAxi.r.rdata
+        core_dmem_valid_reg := true.B
         dmem_just_completed := true.B
-        bridgeState := sBridgeIdle
+        bridgeState := sBridgeDmemDeliver
       }
+    }
+    
+    is(sBridgeDmemDeliver) {
+      core_dmem_valid_reg := false.B
+      bridgeState := sBridgeIdle
     }
   }
 }

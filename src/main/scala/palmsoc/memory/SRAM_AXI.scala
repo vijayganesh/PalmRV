@@ -15,19 +15,25 @@ class SRAM_AXI(config: AXI4LiteConfig, depth: Int) extends AXI4LiteSlave(config)
   // Memory array - use SyncReadMem for BRAM mapping, with byte enables
   val mem = SyncReadMem(depth, Vec(config.strbWidth, UInt(8.W)))
   
-  // AXI4-Lite state machine
-  val sIdle :: sWriteData :: sWriteResp :: sReadData :: Nil = Enum(4)
-  val state = RegInit(sIdle)
+  // AXI4-Lite Write state machine
+  val sWriteIdle :: sWriteData :: sWriteResp :: Nil = Enum(3)
+  val writeState = RegInit(sWriteIdle)
   
-  // Registers for captured address
+  // AXI4-Lite Read state machine
+  val sReadIdle :: sReadData :: Nil = Enum(2)
+  val readState = RegInit(sReadIdle)
+  
+  // Registers for captured address and responses
   val writeAddr = Reg(UInt(config.addrWidth.W))
   val readAddr = Reg(UInt(config.addrWidth.W))
+  val bresp_reg = RegInit(AXI4LiteResp.OKAY)
   
   // Default outputs
   io.axi.awready := false.B
   io.axi.wready  := false.B
-  io.axi.bresp   := AXI4LiteResp.OKAY
+  io.axi.bresp   := bresp_reg
   io.axi.bvalid  := false.B
+  
   io.axi.arready := false.B
   io.axi.rresp   := AXI4LiteResp.OKAY
   io.axi.rvalid  := false.B
@@ -48,20 +54,13 @@ class SRAM_AXI(config: AXI4LiteConfig, depth: Int) extends AXI4LiteSlave(config)
   }
   io.axi.rdata := Mux(is_mem_out_valid, mem_out.asUInt, readDataLatched)
   
-  // State machine
-  switch(state) {
-    is(sIdle) {
-      // Priority: write address > read address
+  // Write State Machine
+  switch(writeState) {
+    is(sWriteIdle) {
       when(io.axi.awvalid) {
         io.axi.awready := true.B
         writeAddr := io.axi.awaddr
-        state := sWriteData
-      }.elsewhen(io.axi.arvalid) {
-        io.axi.arready := true.B
-        readAddr := io.axi.araddr
-        read_addr_wire := io.axi.araddr
-        do_read := true.B
-        state := sReadData
+        writeState := sWriteData
       }
     }
     
@@ -74,7 +73,7 @@ class SRAM_AXI(config: AXI4LiteConfig, depth: Int) extends AXI4LiteSlave(config)
         val writeInBounds = writeAddrIndex < depth.U
         
         when(!writeInBounds || !writeAddrAligned) {
-          io.axi.bresp := AXI4LiteResp.SLVERR
+          bresp_reg := AXI4LiteResp.SLVERR
         }.otherwise {
           // Perform synchronous masked write directly to BRAM
           val writeDataVec = VecInit(Seq.tabulate(config.strbWidth) { i =>
@@ -84,17 +83,30 @@ class SRAM_AXI(config: AXI4LiteConfig, depth: Int) extends AXI4LiteSlave(config)
             io.axi.wstrb(i)
           })
           mem.write(writeAddrIndex, writeDataVec, writeMaskVec)
-          io.axi.bresp := AXI4LiteResp.OKAY
+          bresp_reg := AXI4LiteResp.OKAY
         }
         
-        state := sWriteResp
+        writeState := sWriteResp
       }
     }
     
     is(sWriteResp) {
       io.axi.bvalid := true.B
       when(io.axi.bready) {
-        state := sIdle
+        writeState := sWriteIdle
+      }
+    }
+  }
+
+  // Read State Machine
+  switch(readState) {
+    is(sReadIdle) {
+      when(io.axi.arvalid) {
+        io.axi.arready := true.B
+        readAddr := io.axi.araddr
+        read_addr_wire := io.axi.araddr
+        do_read := true.B
+        readState := sReadData
       }
     }
     
@@ -105,14 +117,12 @@ class SRAM_AXI(config: AXI4LiteConfig, depth: Int) extends AXI4LiteSlave(config)
       when(!readInBounds || !readAddrAligned) {
         io.axi.rdata := 0.U
         io.axi.rresp := AXI4LiteResp.SLVERR
-      }.otherwise {
-        io.axi.rresp := AXI4LiteResp.OKAY
       }
       
       io.axi.rvalid := true.B
       
       when(io.axi.rready) {
-        state := sIdle
+        readState := sReadIdle
       }
     }
   }

@@ -129,6 +129,7 @@ class BootROM_AXI(
   val writeAddr = RegInit(0.U(config.addrWidth.W))
   val readAddr = RegInit(0.U(config.addrWidth.W))
   val readData = RegInit(0.U(config.dataWidth.W))
+  val rresp_reg = RegInit(AXI4LiteResp.OKAY)
   
   // Default outputs - all channels idle
   io.axi.awready := false.B
@@ -137,7 +138,7 @@ class BootROM_AXI(
   io.axi.bvalid  := false.B
   io.axi.arready := false.B
   io.axi.rdata   := readData
-  io.axi.rresp   := AXI4LiteResp.OKAY
+  io.axi.rresp   := rresp_reg
   io.axi.rvalid  := false.B
   
   // Word-aligned address check (use registered values for current operation)
@@ -218,12 +219,12 @@ when(state =/= RegNext(state)) {
       when(!readInBounds || !readAddrAligned) {
         // Address error - out of bounds or misaligned
         io.axi.rdata := 0.U
-        io.axi.rresp := AXI4LiteResp.SLVERR
+        rresp_reg := AXI4LiteResp.SLVERR
         printf(p"[BootROM_AXI] Read error at address 0x${Hexadecimal(readAddr)}\n")
       }.otherwise {
         // Read from ROM synchronously
         io.axi.rdata := Mux(is_rom_out_valid, rom_out, readData)
-        io.axi.rresp := AXI4LiteResp.OKAY
+        rresp_reg := AXI4LiteResp.OKAY
       }
       
       io.axi.rvalid := true.B

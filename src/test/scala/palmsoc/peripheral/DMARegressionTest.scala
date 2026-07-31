@@ -37,12 +37,12 @@ class DMARegressionTest extends AnyFunSpec with ChiselSim {
         }
         
         // Initialize AXI Master responses to prevent hangs
-        dut.io.axi_master.arready.poke(false.B)
+        dut.io.axi_master.arready.poke(true.B)
         dut.io.axi_master.rvalid.poke(false.B)
         dut.io.axi_master.rdata.poke(0.U)
         
-        dut.io.axi_master.awready.poke(false.B)
-        dut.io.axi_master.wready.poke(false.B)
+        dut.io.axi_master.awready.poke(true.B)
+        dut.io.axi_master.wready.poke(true.B)
         dut.io.axi_master.bvalid.poke(false.B)
         
         dut.clock.step(2)
@@ -59,57 +59,65 @@ class DMARegressionTest extends AnyFunSpec with ChiselSim {
         // 2. Simulate Master Bus responding to DMA Transfers
         // --------------------------------------------------------
         
-        var wordsTransferred = 0
+        var readsRequested = 0
+        var readsCompleted = 0
+        var writesRequested = 0
+        var writesCompleted = 0
+        var bResponsesSent = 0
         var timeout = 0
         
         // Loop until transfer completes (Interrupt fires) or timeout
         while (dut.io.interrupt.peek().litValue == 0 && timeout < 100) {
           
-          // Handle DMA Read Request
-          if (dut.io.axi_master.arvalid.peek().litValue == 1) {
-            val addr = dut.io.axi_master.araddr.peek().litValue
-            assert(addr == 0x1000 + (wordsTransferred * 4), s"Unexpected Read Address: 0x${addr.toString(16)}")
-            
-            dut.io.axi_master.arready.poke(true.B)
-            dut.clock.step(1)
-            dut.io.axi_master.arready.poke(false.B)
-            
-            // Provide Read Data
+          // 1. Drive combinational outputs based on current state
+          if (readsCompleted < readsRequested) {
             dut.io.axi_master.rvalid.poke(true.B)
-            dut.io.axi_master.rdata.poke((0xDEADBEEFL + wordsTransferred).U)
-            while(dut.io.axi_master.rready.peek().litValue == 0) { dut.clock.step(1) }
-            dut.clock.step(1)
+            dut.io.axi_master.rdata.poke((0xDEADBEEFL + readsCompleted).U)
+          } else {
             dut.io.axi_master.rvalid.poke(false.B)
           }
           
-          // Handle DMA Write Request
-          if (dut.io.axi_master.awvalid.peek().litValue == 1) {
-            val addr = dut.io.axi_master.awaddr.peek().litValue
-            assert(addr == 0x2000 + (wordsTransferred * 4), s"Unexpected Write Address: 0x${addr.toString(16)}")
-            
-            dut.io.axi_master.awready.poke(true.B)
-            dut.clock.step(1)
-            dut.io.axi_master.awready.poke(false.B)
-            
-            // Accept Write Data
-            dut.io.axi_master.wready.poke(true.B)
-            while(dut.io.axi_master.wvalid.peek().litValue == 0) { dut.clock.step(1) }
-            
-            val data = dut.io.axi_master.wdata.peek().litValue
-            assert(data == 0xDEADBEEFL + wordsTransferred, s"Unexpected Write Data: 0x${data.toString(16)}")
-            
-            dut.clock.step(1)
-            dut.io.axi_master.wready.poke(false.B)
-            
-            // Provide Write Response
+          if (bResponsesSent < writesCompleted) {
             dut.io.axi_master.bvalid.poke(true.B)
-            while(dut.io.axi_master.bready.peek().litValue == 0) { dut.clock.step(1) }
-            dut.clock.step(1)
+          } else {
             dut.io.axi_master.bvalid.poke(false.B)
-            
-            wordsTransferred += 1
           }
           
+          // 2. Sample inputs to see what handshakes occur in this cycle
+          val arvalid = dut.io.axi_master.arvalid.peek().litValue == 1
+          val awvalid = dut.io.axi_master.awvalid.peek().litValue == 1
+          val wvalid  = dut.io.axi_master.wvalid.peek().litValue == 1
+          val rready  = dut.io.axi_master.rready.peek().litValue == 1
+          val bready  = dut.io.axi_master.bready.peek().litValue == 1
+          
+          // 3. Update state for handshakes that completed
+          if (arvalid) {
+            val addr = dut.io.axi_master.araddr.peek().litValue
+            assert(addr == 0x1000 + (readsRequested * 4), s"Unexpected Read Address: 0x${addr.toString(16)}")
+            readsRequested += 1
+          }
+          
+          if (awvalid) {
+            val addr = dut.io.axi_master.awaddr.peek().litValue
+            assert(addr == 0x2000 + (writesRequested * 4), s"Unexpected Write Address: 0x${addr.toString(16)}")
+            writesRequested += 1
+          }
+          
+          if (wvalid) {
+            val data = dut.io.axi_master.wdata.peek().litValue
+            assert(data == 0xDEADBEEFL + writesCompleted, s"Unexpected Write Data: 0x${data.toString(16)}")
+            writesCompleted += 1
+          }
+          
+          if (readsCompleted < readsRequested && rready) {
+             readsCompleted += 1
+          }
+          
+          if (bResponsesSent < writesCompleted && bready) {
+             bResponsesSent += 1
+          }
+          
+          // 4. Step the clock
           dut.clock.step(1)
           timeout += 1
         }
@@ -119,7 +127,7 @@ class DMARegressionTest extends AnyFunSpec with ChiselSim {
         // --------------------------------------------------------
         
         assert(timeout < 100, "DMA Transfer Timed Out")
-        assert(wordsTransferred == 2, s"Expected 2 words transferred, got $wordsTransferred")
+        assert(writesCompleted == 2, s"Expected 2 words transferred, got $writesCompleted")
         
         // Verify interrupt is HIGH
         dut.io.interrupt.expect(true.B)

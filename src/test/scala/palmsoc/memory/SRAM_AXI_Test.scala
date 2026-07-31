@@ -245,7 +245,7 @@ class SRAM_AXI_Test extends AnyFunSpec with ChiselSim {
         while (!dut.io.axi.awready.peek().litToBoolean) {
           dut.clock.step(1)
         }
-        //dut.clock.step(1)
+        dut.clock.step(1)
         dut.io.axi.awvalid.poke(false.B)
         
         dut.io.axi.wdata.poke(0x12345678L.U)
@@ -309,9 +309,10 @@ class SRAM_AXI_Test extends AnyFunSpec with ChiselSim {
         dut.io.axi.wdata.poke(0xCAFEBABEL.U)
         dut.io.axi.wstrb.poke(0xF.U)
         dut.io.axi.wvalid.poke(true.B)
-while(!dut.io.axi.wready.peek().litToBoolean) {
+        while(!dut.io.axi.wready.peek().litToBoolean) {
           dut.clock.step(1)
         }
+        dut.clock.step(1)
         dut.io.axi.wvalid.poke(false.B)
         
         // Response should come, but we don't assert bready immediately
@@ -450,6 +451,7 @@ while(!dut.io.axi.wready.peek().litToBoolean) {
         dut.io.axi.arvalid.poke(true.B)
         while(!dut.io.axi.arready.peek().litToBoolean)
           dut.clock.step(1)
+        dut.clock.step(1)
         dut.io.axi.arvalid.poke(false.B)
         
         dut.io.axi.rready.poke(true.B)
