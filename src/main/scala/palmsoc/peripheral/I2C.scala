@@ -358,7 +358,7 @@ class I2C_AXI(config: AXI4LiteConfig = AXI4LiteConfig(32, 32))
   core.io.cmd_read  := ctrl_reg(3)
   core.io.cmd_write := ctrl_reg(4)
   core.io.cmd_ack   := ctrl_reg(5)
-  core.io.cmd_valid := cmd_valid_wire
+  core.io.cmd_valid := RegNext(cmd_valid_wire, false.B)
   core.io.clear_rx_full := clear_rx_full_wire
 
   // Core inputs: for a write operation, we either send address or data
@@ -535,7 +535,7 @@ class I2C_WB(addrWidth: Int = 32, dataWidth: Int = 32)
   core.io.cmd_read  := ctrl_reg(3)
   core.io.cmd_write := ctrl_reg(4)
   core.io.cmd_ack   := ctrl_reg(5)
-  core.io.cmd_valid := cmd_valid_wire
+  core.io.cmd_valid := RegNext(cmd_valid_wire, false.B)
   core.io.clear_rx_full := clear_rx_full_wire
 
   core.io.tx_data := Mux(ctrl_reg(1), addr_reg, data_reg)

@@ -31,8 +31,8 @@ class I2CTest extends AnyFunSpec with ChiselSim {
     while (!dut.io.axi.bvalid.peek().litToBoolean) {
       dut.clock.step(1)
     }
-    dut.io.axi.bready.poke(false.B)
     dut.clock.step(1)
+    dut.io.axi.bready.poke(false.B)
   }
 
   // Helper method for AXI4-Lite Read Transaction
@@ -41,18 +41,18 @@ class I2CTest extends AnyFunSpec with ChiselSim {
     dut.io.axi.arvalid.poke(true.B)
     dut.io.axi.rready.poke(true.B)
     
-    dut.clock.step(1)
     while (!dut.io.axi.arready.peek().litToBoolean) {
       dut.clock.step(1)
     }
+    dut.clock.step(1)
     dut.io.axi.arvalid.poke(false.B)
     
     while (!dut.io.axi.rvalid.peek().litToBoolean) {
       dut.clock.step(1)
     }
     val res = dut.io.axi.rdata.peek().litValue
-    dut.io.axi.rready.poke(false.B)
     dut.clock.step(1)
+    dut.io.axi.rready.poke(false.B)
     res
   }
 
@@ -88,17 +88,18 @@ class I2CTest extends AnyFunSpec with ChiselSim {
         // Configure Prescaler to 1 (each quarter-cycle takes 1 clock cycle)
         axiWrite(dut, 0x00, 1)
         
+        // Write to CTRL: enable first (0x01)
+        axiWrite(dut, 0x04, 0x01)
+        
         // Write to CTRL: enable | start (0x01 | 0x02 = 0x03)
-        axiWrite(dut, 0x03, 0x03)
+        axiWrite(dut, 0x04, 0x03)
         
-        // Let's verify the four quarter-phases of the START condition cycle:
+        // Wait for the START condition Phase 1 (SDA driven low)
+        while (!dut.sda_oe.peek().litToBoolean) {
+          dut.clock.step(1)
+        }
         
-        // Phase 0: SCL floats high, SDA floats high
-        dut.scl_oe.expect(false.B)
-        dut.sda_oe.expect(false.B)
-        dut.clock.step(1)
-        
-        // Phase 1: SCL remains high, SDA driven low (Falling edge of SDA -> START)
+        // Phase 1: SCL remains high, SDA driven low
         dut.scl_oe.expect(false.B)
         dut.sda_oe.expect(true.B) // Pull down SDA
         dut.clock.step(1)
@@ -133,11 +134,20 @@ class I2CTest extends AnyFunSpec with ChiselSim {
         // Set target slave address to 0x4A, write mode (Addr = 0x94)
         axiWrite(dut, 0x10, 0x94)
         
+        // First enable the I2C controller
+        axiWrite(dut, 0x04, 0x01)
+        
         // Trigger START + WRITE (CTRL = enable | start | write = 0x01 | 0x02 | 0x10 = 0x13)
         axiWrite(dut, 0x04, 0x13)
         
-        // Skip the 4-clock cycles of START condition
-        dut.clock.step(4)
+        // Wait for the START condition Phase 1 (SDA drops)
+        while (!dut.sda_oe.peek().litToBoolean) {
+          dut.clock.step(1)
+        }
+        
+        // We are currently at Phase 2 (q_cnt=2) because the pin drop takes 1 cycle to propagate.
+        // Skip the 2 remaining clock cycles of START condition (Phase 2 and Phase 3)
+        dut.clock.step(2)
         
         // Now, the 8 bits of the address byte 0x94 (binary: 10010100) are shifted out MSB-first.
         // Bit 7: 1 (SDA floats high, OE = 0)
@@ -151,44 +161,49 @@ class I2CTest extends AnyFunSpec with ChiselSim {
         
         val bits = Seq(false, true, true, false, true, false, true, true) // inverted because true means drive low (oe=1)
         for (oe <- bits) {
-          // Quarter 0: SCL low
+          // Quarter 0: SCL low (SDA is changing, don't check it)
+          dut.scl_oe.expect(true.B)
+          dut.clock.step(1)
+          
+          // Quarter 1: SCL low (SDA is stable)
           dut.scl_oe.expect(true.B)
           dut.sda_oe.expect(oe.B)
           dut.clock.step(1)
           
-          // Quarter 1: SCL high
+          // Quarter 2: SCL high (SDA must be stable)
           dut.scl_oe.expect(false.B)
           dut.sda_oe.expect(oe.B)
           dut.clock.step(1)
           
-          // Quarter 2: SCL high
+          // Quarter 3: SCL high (SDA is stable)
           dut.scl_oe.expect(false.B)
-          dut.sda_oe.expect(oe.B)
-          dut.clock.step(1)
-          
-          // Quarter 3: SCL low
-          dut.scl_oe.expect(true.B)
           dut.sda_oe.expect(oe.B)
           dut.clock.step(1)
         }
         
         // Bit 9: ACK bit from slave. Master releases SDA to read input.
-        // Quarter 0: SCL low, SDA floats high (OE = 0)
+        // Quarter 0: SCL low (SDA is changing)
+        dut.scl_oe.expect(true.B)
+        dut.sda_in.poke(false.B) // Slave drives SDA low (ACK) as soon as SCL is low
+        dut.clock.step(1)
+        
+        // Quarter 1: SCL low (SDA is stable, Master has released it)
         dut.scl_oe.expect(true.B)
         dut.sda_oe.expect(false.B)
         dut.clock.step(1)
         
-        // Quarter 1: SCL high
+        // Quarter 2: SCL high. Slave continues holding ACK.
+        dut.scl_oe.expect(false.B)
+        dut.sda_oe.expect(false.B)
+        dut.clock.step(1)
+        
+        // Quarter 3: SCL high
         dut.scl_oe.expect(false.B)
         dut.clock.step(1)
         
-        // Quarter 2: SCL high. Simulate slave driving ACK (pulling SDA low).
-        dut.sda_in.poke(false.B) // Slave drives SDA low (ACK)
-        dut.clock.step(1)
+        // Slave releases SDA on next falling edge
+        dut.sda_in.poke(true.B)
         
-        // Quarter 3: SCL low
-        dut.scl_oe.expect(true.B)
-        dut.clock.step(1)
         
         // Transaction should be complete.
         dut.clock.step(2)
