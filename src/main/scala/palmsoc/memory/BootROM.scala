@@ -76,7 +76,7 @@ class BootROM(
     }
   }.otherwise {
     // Busy - process read operation
-    readData := rom(opAddr(log2Ceil(depth)-1, 0))
+    readData := rom(opAddr)
     
     // Acknowledge and return to idle
     io.wb.ack := true.B
@@ -129,7 +129,6 @@ class BootROM_AXI(
   val writeAddr = RegInit(0.U(config.addrWidth.W))
   val readAddr = RegInit(0.U(config.addrWidth.W))
   val readData = RegInit(0.U(config.dataWidth.W))
-  val rresp_reg = RegInit(AXI4LiteResp.OKAY)
   
   // Default outputs - all channels idle
   io.axi.awready := false.B
@@ -138,7 +137,7 @@ class BootROM_AXI(
   io.axi.bvalid  := false.B
   io.axi.arready := false.B
   io.axi.rdata   := readData
-  io.axi.rresp   := rresp_reg
+  io.axi.rresp   := AXI4LiteResp.OKAY
   io.axi.rvalid  := false.B
   
   // Word-aligned address check (use registered values for current operation)
@@ -208,7 +207,7 @@ when(state =/= RegNext(state)) {
     is(sReadData) {
       // ROM Read Logic
       val read_addr_index = read_addr_wire >> log2Ceil(config.bytesPerWord)
-      val rom_out = rom(read_addr_index(log2Ceil(depth)-1, 0))
+      val rom_out = rom(read_addr_index)
       
       val is_rom_out_valid = RegNext(do_read, false.B)
       when(is_rom_out_valid) {
@@ -219,12 +218,12 @@ when(state =/= RegNext(state)) {
       when(!readInBounds || !readAddrAligned) {
         // Address error - out of bounds or misaligned
         io.axi.rdata := 0.U
-        rresp_reg := AXI4LiteResp.SLVERR
+        io.axi.rresp := AXI4LiteResp.SLVERR
         printf(p"[BootROM_AXI] Read error at address 0x${Hexadecimal(readAddr)}\n")
       }.otherwise {
         // Read from ROM synchronously
         io.axi.rdata := Mux(is_rom_out_valid, rom_out, readData)
-        rresp_reg := AXI4LiteResp.OKAY
+        io.axi.rresp := AXI4LiteResp.OKAY
       }
       
       io.axi.rvalid := true.B

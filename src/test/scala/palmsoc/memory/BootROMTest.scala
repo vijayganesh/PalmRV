@@ -9,7 +9,7 @@ import palmsoc.bus.AXI4LiteResp
 
 
 class BootROM_AXI_Test extends AnyFunSpec with ChiselSim {
-  val config = AXI4LiteConfig(addrWidth = 8, dataWidth = 32)
+  val config = AXI4LiteConfig(addrWidth = 32, dataWidth = 32)
   val depth = 256  // Small ROM for testing
   
   describe("BootROM AXI4-Lite Interface") {
@@ -91,12 +91,14 @@ class BootROM_AXI_Test extends AnyFunSpec with ChiselSim {
           dut.io.axi.arvalid.poke(false.B)
           
           dut.io.axi.rready.poke(true.B)
-          dut.clock.step(1)
+          while(!dut.io.axi.rvalid.peek().litToBoolean) {
+            dut.clock.step(1)
+          }
           dut.io.axi.rvalid.expect(true.B)
           dut.io.axi.rdata.expect(expected.U)
           dut.io.axi.rresp.expect(AXI4LiteResp.OKAY)
-          dut.io.axi.rready.poke(false.B)
           dut.clock.step(1)
+          dut.io.axi.rready.poke(false.B)
         }
       }
     }
@@ -112,11 +114,13 @@ class BootROM_AXI_Test extends AnyFunSpec with ChiselSim {
         dut.io.axi.arvalid.poke(false.B)
         
         dut.io.axi.rready.poke(true.B)
-        dut.clock.step(1)
+        while(!dut.io.axi.rvalid.peek().litToBoolean) {
+          dut.clock.step(1)
+        }
         dut.io.axi.rvalid.expect(true.B)
         dut.io.axi.rresp.expect(AXI4LiteResp.SLVERR)
-        dut.io.axi.rready.poke(false.B)
         dut.clock.step(1)
+        dut.io.axi.rready.poke(false.B)
       }
     }
     
@@ -171,12 +175,14 @@ class BootROM_AXI_Test extends AnyFunSpec with ChiselSim {
           dut.io.axi.arvalid.poke(false.B)
           
           dut.io.axi.rready.poke(true.B)
-          dut.clock.step(1)
+          while(!dut.io.axi.rvalid.peek().litToBoolean) {
+            dut.clock.step(1)
+          }
           dut.io.axi.rvalid.expect(true.B)
           dut.io.axi.rdata.expect(expected)
           dut.io.axi.rresp.expect(AXI4LiteResp.OKAY)
-          dut.io.axi.rready.poke(false.B)
           dut.clock.step(1)
+          dut.io.axi.rready.poke(false.B)
         }
       }
     }
@@ -186,8 +192,9 @@ class BootROM_AXI_Test extends AnyFunSpec with ChiselSim {
         // Issue read address
         dut.io.axi.araddr.poke(0x10.U)
         dut.io.axi.arvalid.poke(true.B)
-        dut.clock.step(1)
+        
         dut.io.axi.arready.expect(true.B)
+        dut.clock.step(1)
         dut.io.axi.arvalid.poke(false.B)
         
         // Wait without asserting rready
@@ -219,9 +226,12 @@ class BootROM_AXI_Test extends AnyFunSpec with ChiselSim {
           dut.io.axi.arvalid.poke(false.B)
           
           dut.io.axi.rready.poke(true.B)
-          dut.clock.step(1)
+          while(!dut.io.axi.rvalid.peek().litToBoolean) {
+            dut.clock.step(1)
+          }
           dut.io.axi.rvalid.expect(true.B)
           dut.io.axi.rresp.expect(AXI4LiteResp.OKAY)
+          dut.clock.step(1)
           dut.io.axi.rready.poke(false.B)
           // No idle cycle - go directly to next read
         }
