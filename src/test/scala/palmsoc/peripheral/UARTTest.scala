@@ -31,8 +31,8 @@ class UARTTest extends AnyFunSpec with ChiselSim {
     while (!dut.io.axi.bvalid.peek().litToBoolean) {
       dut.clock.step(1)
     }
+    dut.clock.step(1) // Handshake happens here!
     dut.io.axi.bready.poke(false.B)
-    dut.clock.step(1)
   }
 
   // Helper method for AXI4-Lite Read Transaction
@@ -41,18 +41,18 @@ class UARTTest extends AnyFunSpec with ChiselSim {
     dut.io.axi.arvalid.poke(true.B)
     dut.io.axi.rready.poke(true.B)
     
-    dut.clock.step(1)
     while (!dut.io.axi.arready.peek().litToBoolean) {
       dut.clock.step(1)
     }
+    dut.clock.step(1)
     dut.io.axi.arvalid.poke(false.B)
     
     while (!dut.io.axi.rvalid.peek().litToBoolean) {
       dut.clock.step(1)
     }
     val res = dut.io.axi.rdata.peek().litValue
+    dut.clock.step(1) // Handshake happens here!
     dut.io.axi.rready.poke(false.B)
-    dut.clock.step(1)
     res
   }
 
@@ -109,29 +109,35 @@ class UARTTest extends AnyFunSpec with ChiselSim {
         // Write byte 0x55 (binary: 01010101) to DATA register
         axiWrite(dut, 0x00, 0x55)
         
-        // The serial transmission starts immediately on next clock ticks
-        // Since divisor is 1, each bit lasts 16 clock cycles.
-        
-        // Start bit (low) - cycles 0-15
-        for (_ <- 0 until 16) {
-          dut.tx.expect(false.B)
+        // Wait for the transmission to start (TX drops low)
+        while (dut.tx.peek().litToBoolean) {
           dut.clock.step(1)
         }
+        
+        // Wait for the transmission to start (TX drops low)
+        while (dut.tx.peek().litToBoolean) {
+          dut.clock.step(1)
+        }
+        
+        // Step to the middle of the start bit (8 cycles)
+        dut.clock.step(8)
+        dut.tx.expect(false.B)
+        
+        // Step to the middle of the first data bit (16 cycles)
+        dut.clock.step(16)
         
         // Data bits (0x55, LSB first: 1, 0, 1, 0, 1, 0, 1, 0)
         val expectedBits = Seq(1, 0, 1, 0, 1, 0, 1, 0)
         for (bit <- expectedBits) {
-          for (_ <- 0 until 16) {
-            dut.tx.expect(bit.U.asBool)
-            dut.clock.step(1)
-          }
+          dut.tx.expect(bit.U.asBool)
+          dut.clock.step(16)
         }
         
-        // Stop bit (high) - cycles 144-159
-        for (_ <- 0 until 16) {
-          dut.tx.expect(true.B)
-          dut.clock.step(1)
-        }
+        // Stop bit (high)
+        dut.tx.expect(true.B)
+        
+        // Wait for the stop bit to finish completely (16 cycles) so state goes back to sTxIdle
+        dut.clock.step(16)
         
         // Transmitter should be back to sIdle, status tx_empty should be high
         val status = axiRead(dut, 0x04)
