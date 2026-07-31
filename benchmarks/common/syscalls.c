@@ -71,7 +71,7 @@ int _getpid(void) {
 
 time_t time(time_t *t) {
     uint32_t cycles;
-    asm volatile ("csrr %0, mcycle" : "=r"(cycles));
+    asm volatile ("rdcycle %0" : "=r"(cycles));
     if (t) *t = cycles;
     return cycles;
 }

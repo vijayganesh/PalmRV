@@ -1,6 +1,6 @@
 include ../common/Makefile.inc
 
-CFLAGS += -O3 -fno-inline -DTIME -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type
+CFLAGS += -O3 -fno-inline -DTIME -DDHRY_ITERS=20 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-return-type
 
 all: dhrystone.hex
 
