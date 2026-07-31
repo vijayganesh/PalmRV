@@ -158,6 +158,10 @@ class BootROM_AXI(
 when(state =/= RegNext(state)) {
     printf(p"[BootROM_AXI] State transition: ${RegNext(state)} -> ${state}\n")
 }
+  // Memory access signals
+  val do_read = WireDefault(false.B)
+  val read_addr_wire = WireDefault(readAddr)
+  
   // State machine
   switch(state) {
     is(sIdle) {
@@ -172,6 +176,8 @@ when(state =/= RegNext(state)) {
         // Accept read address
         io.axi.arready := true.B
         readAddr := io.axi.araddr
+        read_addr_wire := io.axi.araddr
+        do_read := true.B
         state := sReadData
         printf(p"[BootROM_AXI] Accepting read address: 0x${Hexadecimal(io.axi.araddr)}, arready = ${io.axi.arready}, transitioning to sReadData\n")
       }
@@ -199,6 +205,15 @@ when(state =/= RegNext(state)) {
     }
     
     is(sReadData) {
+      // ROM Read Logic
+      val read_addr_index = read_addr_wire >> log2Ceil(config.bytesPerWord)
+      val rom_out = rom(read_addr_index(log2Ceil(depth)-1, 0))
+      
+      val is_rom_out_valid = RegNext(do_read, false.B)
+      when(is_rom_out_valid) {
+        readData := rom_out
+      }
+      
       // Perform read and send data
       when(!readInBounds || !readAddrAligned) {
         // Address error - out of bounds or misaligned
@@ -206,9 +221,8 @@ when(state =/= RegNext(state)) {
         io.axi.rresp := AXI4LiteResp.SLVERR
         printf(p"[BootROM_AXI] Read error at address 0x${Hexadecimal(readAddr)}\n")
       }.otherwise {
-        // Read from ROM
-        readData := rom(readAddrIndex(log2Ceil(depth)-1, 0))
-        io.axi.rdata := rom(readAddrIndex(log2Ceil(depth)-1, 0))
+        // Read from ROM synchronously
+        io.axi.rdata := Mux(is_rom_out_valid, rom_out, readData)
         io.axi.rresp := AXI4LiteResp.OKAY
       }
       

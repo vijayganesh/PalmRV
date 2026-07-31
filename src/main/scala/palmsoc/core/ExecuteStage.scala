@@ -150,70 +150,26 @@ class ExecuteStage(val config: palmsoc.config.SoCConfig = palmsoc.config.Default
   val m_stall_req = WireDefault(false.B)
   
   if (config.enableMExtension) {
-    val is_m_op = io.alu_op === ALUOp.MUL || io.alu_op === ALUOp.MULH || io.alu_op === ALUOp.MULHSU || io.alu_op === ALUOp.MULHU ||
-                  io.alu_op === ALUOp.DIV || io.alu_op === ALUOp.DIVU || io.alu_op === ALUOp.REM || io.alu_op === ALUOp.REMU
-                  
-    val s_idle :: s_calc :: s_done :: Nil = Enum(3)
-    val state = RegInit(s_idle)
-    val calc_count = RegInit(0.U(6.W))
+    val is_mul = io.alu_op === ALUOp.MUL || io.alu_op === ALUOp.MULH || io.alu_op === ALUOp.MULHSU || io.alu_op === ALUOp.MULHU
+    val is_div = io.alu_op === ALUOp.DIV || io.alu_op === ALUOp.DIVU || io.alu_op === ALUOp.REM || io.alu_op === ALUOp.REMU
+    val is_m_op = is_mul || is_div
     
-    val res_reg = RegInit(0.U(32.W))
-    val op1_reg = RegInit(0.U(32.W))
-    val op2_reg = RegInit(0.U(32.W))
+    val multiplier = Module(new SequentialMultiplier)
+    multiplier.io.valid_in := io.valid_in && is_mul && !io.flush
+    multiplier.io.op1 := alu_src1
+    multiplier.io.op2 := alu_src2
+    multiplier.io.alu_op := io.alu_op
     
-    when(io.flush) {
-      state := s_idle
-    }.otherwise {
-      switch(state) {
-        is(s_idle) {
-          when(io.valid_in && is_m_op) {
-            state := s_calc
-            op1_reg := alu_src1
-            op2_reg := alu_src2
-            val is_div = io.alu_op === ALUOp.DIV || io.alu_op === ALUOp.DIVU || io.alu_op === ALUOp.REM || io.alu_op === ALUOp.REMU
-            calc_count := Mux(is_div, 31.U, 1.U) // 1 cycle for MUL, 31 cycles for DIV
-          }
-        }
-        is(s_calc) {
-          when(calc_count === 0.U) {
-            state := s_done
-            // Pseudo-combinational calculation to pass tests (Synthesis tool will convert this to DSP/Logic)
-            // In a real ASIC, you'd implement a shift-and-add/sub here.
-            val signed_src1 = op1_reg.asSInt
-            val signed_src2 = op2_reg.asSInt
-            val full_mul = signed_src1 * signed_src2
-            val full_mulu = op1_reg * op2_reg
-            val full_mulsu = signed_src1 * op2_reg.asSInt // Approximation for Chisel
-            
-            val div_res = Mux(op2_reg === 0.U, ~(0.U(32.W)), (signed_src1 / signed_src2).asUInt)
-            val divu_res = Mux(op2_reg === 0.U, ~(0.U(32.W)), op1_reg / op2_reg)
-            val rem_res = Mux(op2_reg === 0.U, op1_reg, (signed_src1 % signed_src2).asUInt)
-            val remu_res = Mux(op2_reg === 0.U, op1_reg, op1_reg % op2_reg)
-            
-            res_reg := MuxLookup(io.alu_op.asUInt, 0.U)(Seq(
-              ALUOp.MUL.asUInt -> full_mul(31, 0),
-              ALUOp.MULH.asUInt -> full_mul(63, 32),
-              ALUOp.MULHSU.asUInt -> full_mulsu(63, 32),
-              ALUOp.MULHU.asUInt -> full_mulu(63, 32),
-              ALUOp.DIV.asUInt -> div_res,
-              ALUOp.DIVU.asUInt -> divu_res,
-              ALUOp.REM.asUInt -> rem_res,
-              ALUOp.REMU.asUInt -> remu_res
-            ))
-          }.otherwise {
-            calc_count := calc_count - 1.U
-          }
-        }
-        is(s_done) {
-          when(!io.stall) {
-            state := s_idle
-          }
-        }
-      }
-    }
+    val divider = Module(new SequentialDivider)
+    divider.io.valid_in := io.valid_in && is_div && !io.flush
+    divider.io.op1 := alu_src1
+    divider.io.op2 := alu_src2
+    divider.io.alu_op := io.alu_op
     
-    m_stall_req := io.valid_in && is_m_op && (state =/= s_done)
-    m_alu_result := res_reg
+    val m_ready = Mux(is_mul, multiplier.io.ready, divider.io.ready)
+    
+    m_stall_req := io.valid_in && is_m_op && !m_ready
+    m_alu_result := Mux(is_mul, multiplier.io.result, divider.io.result)
   }
   
   io.ex_stall := m_stall_req

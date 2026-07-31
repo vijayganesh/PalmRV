@@ -8,81 +8,82 @@ import palmsoc.config.AXI4LiteConfig
 /**
  * SRAM with AXI4-Lite Interface
  * 
- * Single-port SRAM memory with AXI4-Lite slave interface for memory-mapped access.
- * Supports byte-addressable writes with write strobes and single-cycle read/write operations.
- * 
- * @param config AXI4LiteConfig specifying address and data widths
- * @param depth Number of memory words (each word is config.dataWidth bits)
+ * Synchronous BRAM memory with AXI4-Lite slave interface.
+ * Uses SyncReadMem to map to FPGA Block RAMs.
  */
 class SRAM_AXI(config: AXI4LiteConfig, depth: Int) extends AXI4LiteSlave(config) {
-  // Memory array - use Mem for combinational read
-  val mem = Mem(depth, UInt(config.dataWidth.W))
+  // Memory array - use SyncReadMem for BRAM mapping, with byte enables
+  val mem = SyncReadMem(depth, Vec(config.strbWidth, UInt(8.W)))
   
   // AXI4-Lite state machine
   val sIdle :: sWriteData :: sWriteResp :: sReadData :: Nil = Enum(4)
   val state = RegInit(sIdle)
   
-  // Registers for captured address and write data
+  // Registers for captured address
   val writeAddr = Reg(UInt(config.addrWidth.W))
   val readAddr = Reg(UInt(config.addrWidth.W))
-  val readData = Reg(UInt(config.dataWidth.W))
   
-  // Default outputs - all channels idle
+  // Default outputs
   io.axi.awready := false.B
   io.axi.wready  := false.B
   io.axi.bresp   := AXI4LiteResp.OKAY
   io.axi.bvalid  := false.B
   io.axi.arready := false.B
-  io.axi.rdata   := readData
   io.axi.rresp   := AXI4LiteResp.OKAY
   io.axi.rvalid  := false.B
   
-  // Word-aligned address check
-  val writeAddrAligned = (writeAddr & ((config.bytesPerWord - 1).U)) === 0.U
-  val readAddrAligned = (readAddr & ((config.bytesPerWord - 1).U)) === 0.U
+  // Memory access signals
+  val do_read = WireDefault(false.B)
+  val read_addr_wire = WireDefault(readAddr)
   
-  // Address within bounds check (word-addressed)
-  val writeAddrIndex = writeAddr >> log2Ceil(config.bytesPerWord)
-  val readAddrIndex = readAddr >> log2Ceil(config.bytesPerWord)
-  val writeInBounds = writeAddrIndex < depth.U
-  val readInBounds = readAddrIndex < depth.U
+  // BRAM Read Logic
+  val read_addr_index = read_addr_wire >> log2Ceil(config.bytesPerWord)
+  val mem_out = mem.read(read_addr_index, do_read)
+  
+  // Latch the output for when AXI stall occurs
+  val readDataLatched = Reg(UInt(config.dataWidth.W))
+  val is_mem_out_valid = RegNext(do_read, false.B)
+  when(is_mem_out_valid) {
+    readDataLatched := mem_out.asUInt
+  }
+  io.axi.rdata := Mux(is_mem_out_valid, mem_out.asUInt, readDataLatched)
   
   // State machine
   switch(state) {
     is(sIdle) {
-      // Ready to accept new transactions
       // Priority: write address > read address
       when(io.axi.awvalid) {
-        // Accept write address
         io.axi.awready := true.B
         writeAddr := io.axi.awaddr
         state := sWriteData
       }.elsewhen(io.axi.arvalid) {
-        // Accept read address
         io.axi.arready := true.B
         readAddr := io.axi.araddr
+        read_addr_wire := io.axi.araddr
+        do_read := true.B
         state := sReadData
       }
     }
     
     is(sWriteData) {
-      // Wait for write data
       when(io.axi.wvalid) {
         io.axi.wready := true.B
         
+        val writeAddrAligned = (writeAddr & ((config.bytesPerWord - 1).U)) === 0.U
+        val writeAddrIndex = writeAddr >> log2Ceil(config.bytesPerWord)
+        val writeInBounds = writeAddrIndex < depth.U
+        
         when(!writeInBounds || !writeAddrAligned) {
-          // Address error - out of bounds or misaligned
           io.axi.bresp := AXI4LiteResp.SLVERR
         }.otherwise {
-          // Perform masked write
-          val writeMask = VecInit(Seq.tabulate(config.strbWidth) { i =>
-            Mux(io.axi.wstrb(i), Fill(8, 1.U(1.W)), 0.U(8.W))
-          }).asUInt
-          
-          val oldData = mem.read(writeAddrIndex)
-          val maskedWrite = (io.axi.wdata & writeMask) | (oldData & ~writeMask)
-          mem.write(writeAddrIndex, maskedWrite)
-          
+          // Perform synchronous masked write directly to BRAM
+          val writeDataVec = VecInit(Seq.tabulate(config.strbWidth) { i =>
+            io.axi.wdata(i * 8 + 7, i * 8)
+          })
+          val writeMaskVec = VecInit(Seq.tabulate(config.strbWidth) { i =>
+            io.axi.wstrb(i)
+          })
+          mem.write(writeAddrIndex, writeDataVec, writeMaskVec)
           io.axi.bresp := AXI4LiteResp.OKAY
         }
         
@@ -91,61 +92,37 @@ class SRAM_AXI(config: AXI4LiteConfig, depth: Int) extends AXI4LiteSlave(config)
     }
     
     is(sWriteResp) {
-      // Send write response
       io.axi.bvalid := true.B
-      
       when(io.axi.bready) {
-        // Response accepted, return to idle
         state := sIdle
       }
     }
     
     is(sReadData) {
-      // Perform read and send data
+      val readAddrAligned = (readAddr & ((config.bytesPerWord - 1).U)) === 0.U
+      val readInBounds = (readAddr >> log2Ceil(config.bytesPerWord)) < depth.U
+      
       when(!readInBounds || !readAddrAligned) {
-        // Address error - out of bounds or misaligned
         io.axi.rdata := 0.U
         io.axi.rresp := AXI4LiteResp.SLVERR
       }.otherwise {
-        // Read from memory
-        readData := mem.read(readAddrIndex)
-        io.axi.rdata := mem.read(readAddrIndex)
         io.axi.rresp := AXI4LiteResp.OKAY
       }
       
       io.axi.rvalid := true.B
       
       when(io.axi.rready) {
-        // Data accepted, return to idle
         state := sIdle
       }
     }
   }
 }
 
-/**
- * SRAM_AXI Companion Object
- * 
- * Provides factory methods for common SRAM configurations
- */
 object SRAM_AXI {
-  /**
-   * Create SRAM with default 32-bit AXI4-Lite configuration
-   * 
-   * @param depth Number of words
-   * @return SRAM_AXI module
-   */
   def apply(depth: Int): SRAM_AXI = {
     new SRAM_AXI(AXI4LiteConfig(addrWidth = 32, dataWidth = 32), depth)
   }
   
-  /**
-   * Create SRAM with custom configuration
-   * 
-   * @param config AXI4LiteConfig
-   * @param depth Number of words
-   * @return SRAM_AXI module
-   */
   def apply(config: AXI4LiteConfig, depth: Int): SRAM_AXI = {
     new SRAM_AXI(config, depth)
   }

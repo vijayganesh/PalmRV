@@ -17,7 +17,7 @@ class MExtensionTest extends AnyFunSpec with ChiselSim {
         
         // Provide instructions based on imem_addr to gracefully handle pipeline stalls
         var cycles = 0
-        while (cycles < 20) {
+        while (cycles < 100) {
           val pc = dut.io.imem_addr.peek().litValue
           if (pc == 0) dut.io.imem_data.poke("h00a00093".U) // ADDI x1, x0, 10
           else if (pc == 4) dut.io.imem_data.poke("h00300113".U) // ADDI x2, x0, 3
@@ -31,11 +31,11 @@ class MExtensionTest extends AnyFunSpec with ChiselSim {
           // Check if dmem_write is asserted to break early and verify
           if (dut.io.dmem_write.peek().litValue == 1) {
             dut.io.dmem_wdata.expect(30.U)
-            cycles = 100 // break
+            cycles = 1000 // break
           }
         }
         
-        assert(cycles == 100, "Memory write was never asserted")
+        assert(cycles == 1000, "Memory write was never asserted")
       }
     }
   }
