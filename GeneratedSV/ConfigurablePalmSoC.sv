@@ -1011,46 +1011,46 @@ module MemoryStage(	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7
                 io_flush	// src/main/scala/palmsoc/core/MemoryStage.scala:12:14
 );
 
-  wire             _GEN = io_mem_size == 2'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23
-  wire             _GEN_0 = io_mem_size == 2'h1;	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23
-  wire [3:0][7:0]  _GEN_1 =
-    {{io_dmem_rdata[31:24]},
-     {io_dmem_rdata[23:16]},
-     {io_dmem_rdata[15:8]},
-     {io_dmem_rdata[7:0]}};	// src/main/scala/palmsoc/core/MemoryStage.scala:79:55, :80:29, :81:29, :82:29, :83:29
-  wire [7:0]       byte_data = _GEN_1[io_alu_result_in[1:0]];	// src/main/scala/palmsoc/core/MemoryStage.scala:74:37, :79:55
-  wire [15:0]      half_data =
-    io_alu_result_in[1] ? io_dmem_rdata[31:16] : io_dmem_rdata[15:0];	// src/main/scala/palmsoc/core/MemoryStage.scala:74:37, :91:{26,38,56,79}
-  wire [3:0][31:0] _GEN_2 =
-    {{io_csr_rdata},
-     {io_pc_plus_4_in},
-     {_GEN
-        ? {io_mem_unsigned ? 24'h0 : {24{byte_data[7]}}, byte_data}
-        : _GEN_0
-            ? {io_mem_unsigned ? 16'h0 : {16{half_data[15]}}, half_data}
-            : io_dmem_rdata},
-     {io_alu_result_in}};	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23, :77:23, :79:55, :85:{25,31}, :87:{12,17,31}, :91:26, :92:{25,31}, :94:{12,17,31}, :103:58
-  reg  [31:0]      wb_data_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:113:28
-  reg  [4:0]       rd_addr_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:114:28
-  reg              reg_write_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:115:30
-  reg              valid_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:116:26
+  wire        _GEN = io_mem_size == 2'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23
+  wire        _GEN_0 = io_mem_size == 2'h1;	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23
+  reg  [31:0] wb_data_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:116:28
+  reg  [4:0]  rd_addr_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:117:28
+  reg         reg_write_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:118:30
+  reg         valid_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:119:26
   always @(posedge clock) begin	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7
     if (reset) begin	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7
-      wb_data_reg <= 32'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:113:28
-      rd_addr_reg <= 5'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:114:28
-      reg_write_reg <= 1'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23, :115:30
-      valid_reg <= 1'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23, :116:26
+      wb_data_reg <= 32'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:116:28
+      rd_addr_reg <= 5'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:117:28
+      reg_write_reg <= 1'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23, :118:30
+      valid_reg <= 1'h0;	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23, :119:26
     end
     else begin	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7
-      if (io_flush | io_stall) begin	// src/main/scala/palmsoc/core/MemoryStage.scala:113:28, :114:28, :118:18, :121:25
+      if (io_flush | io_stall) begin	// src/main/scala/palmsoc/core/MemoryStage.scala:116:28, :117:28, :121:18, :124:25
       end
-      else begin	// src/main/scala/palmsoc/core/MemoryStage.scala:114:28, :118:18, :121:25
-        wb_data_reg <= _GEN_2[io_wb_sel_in];	// src/main/scala/palmsoc/core/MemoryStage.scala:103:58, :113:28
-        rd_addr_reg <= io_rd_addr_in;	// src/main/scala/palmsoc/core/MemoryStage.scala:114:28
+      else begin	// src/main/scala/palmsoc/core/MemoryStage.scala:117:28, :121:18, :124:25
+        automatic logic [3:0][7:0]  _GEN_1 =
+          {{io_dmem_rdata[31:24]},
+           {io_dmem_rdata[23:16]},
+           {io_dmem_rdata[15:8]},
+           {io_dmem_rdata[7:0]}};	// src/main/scala/palmsoc/core/MemoryStage.scala:79:55, :80:29, :81:29, :82:29, :83:29
+        automatic logic [7:0]       byte_data = _GEN_1[io_alu_result_in[1:0]];	// src/main/scala/palmsoc/core/MemoryStage.scala:74:37, :79:55
+        automatic logic [15:0]      half_data =
+          io_alu_result_in[1] ? io_dmem_rdata[31:16] : io_dmem_rdata[15:0];	// src/main/scala/palmsoc/core/MemoryStage.scala:74:37, :91:{26,38,56,79}
+        automatic logic [3:0][31:0] _GEN_2 =
+          {{io_csr_rdata},
+           {io_pc_plus_4_in},
+           {_GEN
+              ? {io_mem_unsigned ? 24'h0 : {24{byte_data[7]}}, byte_data}
+              : _GEN_0
+                  ? {io_mem_unsigned ? 16'h0 : {16{half_data[15]}}, half_data}
+                  : io_dmem_rdata},
+           {io_alu_result_in}};	// src/main/scala/palmsoc/core/MemoryStage.scala:66:23, :77:23, :79:55, :85:{25,31}, :87:{12,17,31}, :91:26, :92:{25,31}, :94:{12,17,31}, :103:58
+        wb_data_reg <= _GEN_2[io_wb_sel_in];	// src/main/scala/palmsoc/core/MemoryStage.scala:103:58, :116:28
+        rd_addr_reg <= io_rd_addr_in;	// src/main/scala/palmsoc/core/MemoryStage.scala:117:28
       end
-      reg_write_reg <= ~io_flush & (io_stall ? reg_write_reg : io_reg_write_in);	// src/main/scala/palmsoc/core/MemoryStage.scala:115:30, :118:18, :120:19, :121:25, :124:19
+      reg_write_reg <= ~io_flush & (io_stall ? reg_write_reg : io_reg_write_in);	// src/main/scala/palmsoc/core/MemoryStage.scala:118:30, :121:18, :123:19, :124:25, :127:19
       valid_reg <=
-        ~io_flush & (io_stall ? valid_reg : io_valid_in & (~io_mem_read | io_dmem_valid));	// src/main/scala/palmsoc/core/MemoryStage.scala:116:26, :118:18, :119:15, :120:19, :121:25, :125:{15,30,34,47}
+        ~io_flush & (io_stall ? valid_reg : io_valid_in & (~io_mem_read | io_dmem_valid));	// src/main/scala/palmsoc/core/MemoryStage.scala:119:26, :121:18, :122:15, :123:19, :124:25, :128:{15,30,34,47}
     end
   end // always @(posedge)
   assign io_dmem_addr = io_alu_result_in;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7
@@ -1061,12 +1061,12 @@ module MemoryStage(	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7
   assign io_dmem_write = io_mem_write;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7
   assign io_dmem_read = io_mem_read;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7
   assign io_dmem_size = io_mem_size;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7
-  assign io_wb_data = wb_data_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :113:28
-  assign io_rd_addr_out = rd_addr_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :114:28
-  assign io_reg_write_out = reg_write_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :115:30
-  assign io_valid_out = valid_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :116:26
-  assign io_forward_data_out = _GEN_2[io_wb_sel_in];	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :103:58
-  assign io_mret_out = io_mret_in & io_valid_in;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :133:29
+  assign io_wb_data = wb_data_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :116:28
+  assign io_rd_addr_out = rd_addr_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :117:28
+  assign io_reg_write_out = reg_write_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :118:30
+  assign io_valid_out = valid_reg;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :119:26
+  assign io_forward_data_out = io_wb_sel_in == 2'h2 ? io_pc_plus_4_in : io_alu_result_in;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :66:23, :103:58, :113:29
+  assign io_mret_out = io_mret_in & io_valid_in;	// src/main/scala/palmsoc/core/MemoryStage.scala:11:7, :136:29
 endmodule
 
 module WritebackStage(	// src/main/scala/palmsoc/core/WriteBackStage.scala:10:7
@@ -1255,14 +1255,14 @@ module HazardDetectionUnit(	// src/main/scala/palmsoc/core/HazardDetectionUnit.s
                io_id_rs2,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
   input        io_id_rs1_used,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
                io_id_rs2_used,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
-               io_ex_mem_read,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
+  input  [1:0] io_ex_wb_sel,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
   input  [4:0] io_ex_rd,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
   output       io_load_use_stall	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
 );
 
   assign io_load_use_stall =
-    io_ex_mem_read & (|io_ex_rd)
-    & (io_id_rs1_used & io_id_rs1 == io_ex_rd | io_id_rs2_used & io_id_rs2 == io_ex_rd);	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:11:7, :28:21, :33:{23,35,44}, :34:{36,50}, :35:{36,50}, :37:{20,34}
+    (io_ex_wb_sel == 2'h1 | (&io_ex_wb_sel)) & (|io_ex_rd)
+    & (io_id_rs1_used & io_id_rs1 == io_ex_rd | io_id_rs2_used & io_id_rs2 == io_ex_rd);	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:11:7, :28:21, :34:{37,45,61}, :36:{23,35,44}, :37:{36,50}, :38:{36,50}, :40:{20,34}
 endmodule
 
 module CSRFile(	// src/main/scala/palmsoc/core/CSRFile.scala:108:7
@@ -1730,7 +1730,7 @@ module RV32Core(	// src/main/scala/palmsoc/core/RV32Core.scala:17:7
     .io_id_rs2         (_decode_io_rs2_addr),	// src/main/scala/palmsoc/core/RV32Core.scala:39:22
     .io_id_rs1_used    (_decode_io_rs1_used),	// src/main/scala/palmsoc/core/RV32Core.scala:39:22
     .io_id_rs2_used    (_decode_io_rs2_used),	// src/main/scala/palmsoc/core/RV32Core.scala:39:22
-    .io_ex_mem_read    (_decode_io_mem_read),	// src/main/scala/palmsoc/core/RV32Core.scala:39:22
+    .io_ex_wb_sel      (_decode_io_wb_sel),	// src/main/scala/palmsoc/core/RV32Core.scala:39:22
     .io_ex_rd          (_decode_io_rd_addr),	// src/main/scala/palmsoc/core/RV32Core.scala:39:22
     .io_load_use_stall (_hazard_io_load_use_stall)
   );	// src/main/scala/palmsoc/core/RV32Core.scala:47:22
@@ -5280,67 +5280,68 @@ module SRAM_AXI(	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7
 );
 
   wire [31:0] _mem_ext_R0_data;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:16:24
-  reg  [1:0]  state;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22
-  reg  [31:0] writeAddr;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:23:22
-  reg  [31:0] readAddr;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:21
-  reg  [31:0] readDataLatched;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:44:28
-  reg         is_mem_out_valid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:45:33
-  wire        _GEN = state == 2'h0;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22, :52:17
-  wire        do_read = _GEN & ~io_axi_awvalid & io_axi_arvalid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:31:18, :52:17, :55:28, :59:34
-  wire        _GEN_0 = ~_GEN | io_axi_awvalid | ~io_axi_arvalid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:21, :52:17, :55:28, :59:34
-  wire        _GEN_1 = state == 2'h1;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22, :52:17, :58:15
-  wire        _GEN_2 = state == 2'h2;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22, :52:17, :77:24
-  wire        _GEN_3 = _GEN | _GEN_1;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:30:18, :52:17
+  reg  [1:0]  writeState;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:27
+  reg         readState;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:26
+  reg  [31:0] writeAddr;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:27:22
+  reg  [31:0] readAddr;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:28:21
+  reg  [31:0] readDataLatched;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:50:28
+  reg         is_mem_out_valid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:51:33
+  wire        _GEN = writeState == 2'h0;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:27, :58:22
+  wire        _GEN_0 = writeState == 2'h1;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:27, :58:22, :63:20
+  wire        _GEN_1 = writeState == 2'h2;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:27, :58:22, :76:21
+  wire        do_read = ~readState & io_axi_arvalid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:26, :37:18, :102:21, :104:28
+  wire        _GEN_2 = ~readState & io_axi_arvalid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:26, :28:21, :102:21, :104:28, :106:18
   always @(posedge clock) begin	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7
     if (reset) begin	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7
-      state <= 2'h0;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22
-      is_mem_out_valid <= 1'h0;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:45:33
+      writeState <= 2'h0;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:27
+      readState <= 1'h0;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:26
+      is_mem_out_valid <= 1'h0;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:51:33
     end
     else begin	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7
-      if (_GEN) begin	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:52:17
+      if (_GEN) begin	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:58:22
         if (io_axi_awvalid)	// src/main/scala/palmsoc/bus/AXI4LiteBus.scala:112:14
-          state <= 2'h1;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22, :58:15
-        else if (io_axi_arvalid)	// src/main/scala/palmsoc/bus/AXI4LiteBus.scala:112:14
-          state <= 2'h3;	// src/main/scala/palmsoc/bus/AXI4LiteBus.scala:124:17, src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22
+          writeState <= 2'h1;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:27, :63:20
       end
-      else if (_GEN_1) begin	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:52:17
+      else if (_GEN_0) begin	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:58:22
         if (io_axi_wvalid)	// src/main/scala/palmsoc/bus/AXI4LiteBus.scala:112:14
-          state <= 2'h2;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22, :77:24
+          writeState <= 2'h2;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:27, :76:21
       end
-      else if (_GEN_2 ? io_axi_bready : (&state) & io_axi_rready)	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22, :52:17, :96:27, :97:15, :114:27, :115:15
-        state <= 2'h0;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:22
-      is_mem_out_valid <= do_read;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:31:18, :45:33, :52:17, :55:28, :59:34
+      else if (_GEN_1 & io_axi_bready)	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:27, :58:22, :95:27, :96:20
+        writeState <= 2'h0;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:20:27
+      if (readState)	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:26
+        readState <= ~(readState & io_axi_rready);	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:26, :102:21, :124:27, :125:19
+      else	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:26
+        readState <= io_axi_arvalid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:26
+      is_mem_out_valid <= do_read;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:37:18, :51:33, :102:21, :104:28
     end
-    if (_GEN & io_axi_awvalid)	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:23:22, :52:17, :55:28, :57:19
-      writeAddr <= io_axi_awaddr;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:23:22
-    if (_GEN_0) begin	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:21, :52:17, :55:28, :59:34
-    end
-    else	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:21, :52:17, :55:28, :59:34
-      readAddr <= io_axi_araddr;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:21
-    if (is_mem_out_valid)	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:45:33
-      readDataLatched <= _mem_ext_R0_data;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:16:24, :44:28
+    if (_GEN & io_axi_awvalid)	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:27:22, :58:22, :60:28, :62:19
+      writeAddr <= io_axi_awaddr;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:27:22
+    if (_GEN_2)	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:28:21, :102:21, :104:28, :106:18
+      readAddr <= io_axi_araddr;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:28:21
+    if (is_mem_out_valid)	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:51:33
+      readDataLatched <= _mem_ext_R0_data;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:16:24, :50:28
   end // always @(posedge)
   mem_4096x32 mem_ext (	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:16:24
-    .R0_addr (_GEN_0 ? readAddr[13:2] : io_axi_araddr[13:2]),	// src/main/scala/palmsoc/bus/AXI4LiteBus.scala:112:14, src/main/scala/palmsoc/memory/SRAM_AXI.scala:24:21, :52:17, :55:28, :59:34
-    .R0_en   (do_read),	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:31:18, :52:17, :55:28, :59:34
+    .R0_addr (_GEN_2 ? io_axi_araddr[13:2] : readAddr[13:2]),	// src/main/scala/palmsoc/bus/AXI4LiteBus.scala:112:14, src/main/scala/palmsoc/memory/SRAM_AXI.scala:28:21, :102:21, :104:28, :106:18
+    .R0_en   (do_read),	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:37:18, :102:21, :104:28
     .R0_clk  (clock),
     .R0_data (_mem_ext_R0_data),
-    .W0_addr (writeAddr[13:2]),	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:23:22, :73:40, :86:20
+    .W0_addr (writeAddr[13:2]),	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:27:22, :72:40, :85:20
     .W0_en
-      (~_GEN & _GEN_1 & io_axi_wvalid & {|(writeAddr[31:14]), writeAddr[1:0]} == 3'h0),	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:16:24, :23:22, :24:21, :52:17, :55:28, :69:27, :72:{43,76}, :74:44, :76:{14,29,51}
+      (~_GEN & _GEN_0 & io_axi_wvalid & {|(writeAddr[31:14]), writeAddr[1:0]} == 3'h0),	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:16:24, :27:22, :33:18, :58:22, :68:27, :71:{43,76}, :73:44, :75:{14,29,51}
     .W0_clk  (clock),
     .W0_data (io_axi_wdata),
     .W0_mask (io_axi_wstrb)
   );	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:16:24
-  assign io_axi_awready = _GEN & io_axi_awvalid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :27:18, :52:17, :55:28
-  assign io_axi_wready = ~_GEN & _GEN_1 & io_axi_wvalid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :24:21, :28:18, :52:17, :55:28, :69:27
-  assign io_axi_bvalid = ~_GEN_3 & _GEN_2;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :30:18, :52:17
-  assign io_axi_arready = do_read;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :31:18, :52:17, :55:28, :59:34
+  assign io_axi_awready = _GEN & io_axi_awvalid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :32:18, :58:22, :60:28
+  assign io_axi_wready = ~_GEN & _GEN_0 & io_axi_wvalid;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :33:18, :58:22, :68:27
+  assign io_axi_bvalid = ~(_GEN | _GEN_0) & _GEN_1;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :35:18, :58:22
+  assign io_axi_arready = do_read;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :37:18, :102:21, :104:28
   assign io_axi_rdata =
-    _GEN | _GEN_1 | _GEN_2 | ~((&state) & (|{|(readAddr[31:14]), readAddr[1:0]}))
-      ? (is_mem_out_valid ? _mem_ext_R0_data : readDataLatched)
-      : 32'h0;	// src/main/scala/palmsoc/bus/AXI4LiteBus.scala:131:17, src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :16:24, :20:22, :24:21, :44:28, :45:33, :49:{16,22}, :52:17, :102:{39,72}, :103:70, :105:{12,26,47}, :106:22
-  assign io_axi_rvalid = ~(_GEN_3 | _GEN_2) & (&state);	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :20:22, :30:18, :33:18, :52:17
+    readState & (|{|(readAddr[31:14]), readAddr[1:0]})
+      ? 32'h0
+      : is_mem_out_valid ? _mem_ext_R0_data : readDataLatched;	// src/main/scala/palmsoc/bus/AXI4LiteBus.scala:131:17, src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :16:24, :24:26, :28:21, :50:28, :51:33, :55:{16,22}, :102:21, :114:{39,72}, :115:70, :117:{12,26,47}, :118:22
+  assign io_axi_rvalid = readState;	// src/main/scala/palmsoc/memory/SRAM_AXI.scala:14:7, :24:26
 endmodule
 
 module DMA_AXI(	// src/main/scala/palmsoc/peripheral/DMA_AXI.scala:17:7
@@ -6569,6 +6570,7 @@ module I2C_AXI(	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7
   reg  [7:0]  data_reg;	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29
   reg  [7:0]  addr_reg;	// src/main/scala/palmsoc/peripheral/I2C.scala:335:29
   reg         int_pending_reg;	// src/main/scala/palmsoc/peripheral/I2C.scala:337:32
+  reg         core_io_cmd_valid_REG;	// src/main/scala/palmsoc/peripheral/I2C.scala:361:31
   reg         prev_busy;	// src/main/scala/palmsoc/peripheral/I2C.scala:368:26
   reg         prev_tx_empty;	// src/main/scala/palmsoc/peripheral/I2C.scala:375:30
   reg         rx_ready_flag_REG;	// src/main/scala/palmsoc/peripheral/I2C.scala:377:50
@@ -6579,23 +6581,19 @@ module I2C_AXI(	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7
   wire        io_axi_arready_0 = state == 2'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22, :403:17
   wire        _GEN = state == 2'h1;	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22, :403:17, :409:15
   wire        io_axi_wready_0 = ~io_axi_arready_0 & _GEN;	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :395:18, :403:17, :407:46
-  wire        _GEN_0 = io_axi_wvalid & io_axi_wready_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:395:18, :403:17, :418:26
-  wire        _GEN_1 = writeAddr[7:0] == 8'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29, :389:26, :419:33, :426:26
-  wire        _GEN_2 = writeAddr[7:0] == 8'h4;	// src/main/scala/palmsoc/peripheral/I2C.scala:389:26, :419:33, :426:26
-  wire        _GEN_3 = _GEN & _GEN_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:369:36, :403:17, :418:{26,44}, :426:26
-  wire        _GEN_4 = state == 2'h2;	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22, :403:17, :447:15
-  wire        io_axi_bvalid_0 = ~(io_axi_arready_0 | _GEN) & _GEN_4;	// src/main/scala/palmsoc/peripheral/I2C.scala:397:18, :403:17
-  wire        _GEN_5 = readAddr[7:0] == 8'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29, :390:25, :459:30, :462:24
-  wire        _GEN_6 = readAddr[7:0] == 8'h4;	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :426:26, :459:30, :462:24
-  wire        _GEN_7 = readAddr[7:0] == 8'h8;	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :426:26, :459:30, :462:24
-  wire        _GEN_8 = readAddr[7:0] == 8'hC;	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :426:26, :459:30, :462:24
-  wire        _GEN_9 = io_axi_arready_0 | _GEN | _GEN_4;	// src/main/scala/palmsoc/peripheral/I2C.scala:354:39, :403:17
+  wire        _GEN_0 = state == 2'h2;	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22, :403:17, :447:15
+  wire        io_axi_bvalid_0 = ~(io_axi_arready_0 | _GEN) & _GEN_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:397:18, :403:17
+  wire        _GEN_1 = readAddr[7:0] == 8'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29, :390:25, :459:30, :462:24
+  wire        _GEN_2 = readAddr[7:0] == 8'h4;	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :426:26, :459:30, :462:24
+  wire        _GEN_3 = readAddr[7:0] == 8'h8;	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :426:26, :459:30, :462:24
+  wire        _GEN_4 = readAddr[7:0] == 8'hC;	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :426:26, :459:30, :462:24
+  wire        _GEN_5 = io_axi_arready_0 | _GEN | _GEN_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:354:39, :403:17
   wire [31:0] read_val =
-    _GEN_5
+    _GEN_1
       ? {16'h0, prescale_reg}
-      : _GEN_6
+      : _GEN_2
           ? {25'h0, ctrl_reg}
-          : _GEN_7
+          : _GEN_3
               ? {26'h0,
                  int_pending_reg,
                  1'h0,
@@ -6603,10 +6601,10 @@ module I2C_AXI(	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7
                  _core_io_tx_empty,
                  _core_io_rx_ack,
                  _core_io_busy}
-              : _GEN_8
+              : _GEN_4
                   ? {24'h0, _core_io_rx_data}
                   : readAddr[7:0] == 8'h10 ? {24'h0, addr_reg} : 32'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:332:29, :333:29, :335:29, :337:32, :340:20, :389:26, :390:25, :426:26, :459:30, :460:33, :462:24, :464:20, :467:20, :472:{20,26}, :475:20, :479:20
-  wire        _GEN_10 = _GEN_9 | ~(&state);	// src/main/scala/palmsoc/peripheral/I2C.scala:354:39, :387:22, :391:25, :403:17
+  wire        _GEN_6 = _GEN_5 | ~(&state);	// src/main/scala/palmsoc/peripheral/I2C.scala:354:39, :387:22, :391:25, :403:17
   always @(posedge clock) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7
     if (reset) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7
       prescale_reg <= 16'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:332:29
@@ -6614,64 +6612,72 @@ module I2C_AXI(	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7
       data_reg <= 8'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29
       addr_reg <= 8'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29, :335:29
       int_pending_reg <= 1'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:337:32
+      core_io_cmd_valid_REG <= 1'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:361:31
       state <= 2'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22
       writeAddr <= 32'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:389:26
       readAddr <= 32'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:389:26, :390:25
       readData <= 32'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:389:26, :391:25
     end
     else begin	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7
-      automatic logic       _GEN_11;	// src/main/scala/palmsoc/peripheral/I2C.scala:407:27
-      automatic logic       _GEN_12;	// src/main/scala/palmsoc/peripheral/I2C.scala:410:33
+      automatic logic       _GEN_7;	// src/main/scala/palmsoc/peripheral/I2C.scala:407:27
+      automatic logic       _GEN_8;	// src/main/scala/palmsoc/peripheral/I2C.scala:410:33
+      automatic logic       _GEN_9;	// src/main/scala/palmsoc/peripheral/I2C.scala:418:26
       automatic logic [7:0] _write_mask_WIRE_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:422:14
+      automatic logic       _GEN_10 = writeAddr[7:0] == 8'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29, :389:26, :419:33, :426:26
+      automatic logic       _GEN_11 = writeAddr[7:0] == 8'h4;	// src/main/scala/palmsoc/peripheral/I2C.scala:389:26, :419:33, :426:26
+      automatic logic       _GEN_12;	// src/main/scala/palmsoc/peripheral/I2C.scala:369:36, :403:17, :418:44, :426:26
       automatic logic       _GEN_13 = writeAddr[7:0] == 8'h8;	// src/main/scala/palmsoc/peripheral/I2C.scala:389:26, :419:33, :426:26
       automatic logic       _GEN_14 = writeAddr[7:0] == 8'hC;	// src/main/scala/palmsoc/peripheral/I2C.scala:389:26, :419:33, :426:26
-      _GEN_11 = io_axi_awvalid & io_axi_arready_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:403:17, :407:27
-      _GEN_12 = io_axi_arvalid & io_axi_arready_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:403:17, :410:33
+      _GEN_7 = io_axi_awvalid & io_axi_arready_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:403:17, :407:27
+      _GEN_8 = io_axi_arvalid & io_axi_arready_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:403:17, :410:33
+      _GEN_9 = io_axi_wvalid & io_axi_wready_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:395:18, :403:17, :418:26
       _write_mask_WIRE_0 = {8{io_axi_wstrb[0]}};	// src/main/scala/palmsoc/peripheral/I2C.scala:422:{14,27}
-      if (io_axi_arready_0 | ~(_GEN & _GEN_0 & _GEN_1)) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:332:29, :403:17, :418:{26,44}, :426:26, :428:26
+      _GEN_12 = _GEN & _GEN_9;	// src/main/scala/palmsoc/peripheral/I2C.scala:369:36, :403:17, :418:{26,44}, :426:26
+      if (io_axi_arready_0 | ~(_GEN & _GEN_9 & _GEN_10)) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:332:29, :403:17, :418:{26,44}, :426:26, :428:26
       end
       else	// src/main/scala/palmsoc/peripheral/I2C.scala:332:29, :403:17
         prescale_reg <= io_axi_wdata[15:0] & {{8{io_axi_wstrb[1]}}, _write_mask_WIRE_0};	// src/main/scala/palmsoc/peripheral/I2C.scala:332:29, :422:{14,27}, :424:40, :428:40
-      if (io_axi_arready_0 | ~_GEN_3 | _GEN_1 | ~_GEN_2) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:369:36, :403:17, :418:44, :426:26
+      if (io_axi_arready_0 | ~_GEN_12 | _GEN_10 | ~_GEN_11) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:369:36, :403:17, :418:44, :426:26
         if (_core_io_busy & ~prev_busy)	// src/main/scala/palmsoc/peripheral/I2C.scala:340:20, :368:26, :369:{21,24}
           ctrl_reg <= {ctrl_reg[6:5], 4'h0, ctrl_reg[0]};	// src/main/scala/palmsoc/peripheral/I2C.scala:333:29, :341:31, :370:{20,29}
       end
       else	// src/main/scala/palmsoc/peripheral/I2C.scala:369:36, :403:17, :418:44, :426:26
         ctrl_reg <= io_axi_wdata[6:0] & {7{io_axi_wstrb[0]}};	// src/main/scala/palmsoc/peripheral/I2C.scala:333:29, :422:{14,27}, :424:40, :431:36
-      if (io_axi_arready_0 | ~_GEN_3 | _GEN_1 | _GEN_2 | _GEN_13 | ~_GEN_14) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29, :369:36, :403:17, :418:44, :426:26
+      if (io_axi_arready_0 | ~_GEN_12 | _GEN_10 | _GEN_11 | _GEN_13 | ~_GEN_14) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29, :369:36, :403:17, :418:44, :426:26
       end
       else	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29, :403:17, :418:44, :426:26
         data_reg <= io_axi_wdata[7:0] & _write_mask_WIRE_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:334:29, :422:14, :424:40, :441:36
-      if (io_axi_arready_0 | ~_GEN_3 | _GEN_1 | _GEN_2 | _GEN_13 | _GEN_14
+      if (io_axi_arready_0 | ~_GEN_12 | _GEN_10 | _GEN_11 | _GEN_13 | _GEN_14
           | writeAddr[7:0] != 8'h10) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:335:29, :369:36, :389:26, :403:17, :418:44, :419:33, :426:26
       end
       else	// src/main/scala/palmsoc/peripheral/I2C.scala:335:29, :403:17, :418:44, :426:26
         addr_reg <= io_axi_wdata[7:0] & _write_mask_WIRE_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:335:29, :422:14, :424:40, :441:36, :444:36
       int_pending_reg <=
-        (io_axi_arready_0 | ~_GEN_3 | _GEN_1 | _GEN_2
+        (io_axi_arready_0 | ~_GEN_12 | _GEN_10 | _GEN_11
          | ~(_GEN_13 & io_axi_wdata[5] & io_axi_wstrb[0]))
         & (ctrl_reg[0] & ctrl_reg[6]
            & (_core_io_tx_empty & ~prev_tx_empty | _core_io_rx_full & ~rx_ready_flag_REG)
            | int_pending_reg);	// src/main/scala/palmsoc/peripheral/I2C.scala:333:29, :337:32, :340:20, :341:31, :369:36, :375:30, :376:{38,41}, :377:{39,42,50}, :379:{20,31,35,51,70}, :380:21, :403:17, :418:44, :422:27, :424:40, :426:26, :436:{29,34}, :437:31
+      core_io_cmd_valid_REG <= ~io_axi_arready_0 & _GEN_12 & ~_GEN_10 & _GEN_11;	// src/main/scala/palmsoc/peripheral/I2C.scala:353:35, :361:31, :369:36, :390:25, :403:17, :407:46, :418:44, :426:26
       if (io_axi_arready_0) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:403:17
-        if (_GEN_11)	// src/main/scala/palmsoc/peripheral/I2C.scala:407:27
+        if (_GEN_7)	// src/main/scala/palmsoc/peripheral/I2C.scala:407:27
           state <= 2'h1;	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22, :409:15
-        else if (_GEN_12)	// src/main/scala/palmsoc/peripheral/I2C.scala:410:33
+        else if (_GEN_8)	// src/main/scala/palmsoc/peripheral/I2C.scala:410:33
           state <= 2'h3;	// src/main/scala/palmsoc/bus/AXI4LiteBus.scala:124:17, src/main/scala/palmsoc/peripheral/I2C.scala:387:22
       end
       else if (_GEN) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:403:17
-        if (_GEN_0)	// src/main/scala/palmsoc/peripheral/I2C.scala:418:26
+        if (_GEN_9)	// src/main/scala/palmsoc/peripheral/I2C.scala:418:26
           state <= 2'h2;	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22, :447:15
       end
-      else if (_GEN_4 ? io_axi_bvalid_0 & io_axi_bready : (&state) & io_axi_rready)	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22, :397:18, :403:17, :453:{26,44}, :454:15, :486:27, :487:15
+      else if (_GEN_0 ? io_axi_bvalid_0 & io_axi_bready : (&state) & io_axi_rready)	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22, :397:18, :403:17, :453:{26,44}, :454:15, :486:27, :487:15
         state <= 2'h0;	// src/main/scala/palmsoc/peripheral/I2C.scala:387:22
-      if (_GEN_11)	// src/main/scala/palmsoc/peripheral/I2C.scala:407:27
+      if (_GEN_7)	// src/main/scala/palmsoc/peripheral/I2C.scala:407:27
         writeAddr <= io_axi_awaddr;	// src/main/scala/palmsoc/peripheral/I2C.scala:389:26
-      if (~io_axi_arready_0 | _GEN_11 | ~_GEN_12) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :403:17, :407:{27,46}, :410:{33,52}
+      if (~io_axi_arready_0 | _GEN_7 | ~_GEN_8) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :403:17, :407:{27,46}, :410:{33,52}
       end
       else	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25, :403:17, :407:46, :410:52
         readAddr <= io_axi_araddr;	// src/main/scala/palmsoc/peripheral/I2C.scala:390:25
-      if (_GEN_10) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:391:25, :403:17
+      if (_GEN_6) begin	// src/main/scala/palmsoc/peripheral/I2C.scala:391:25, :403:17
       end
       else	// src/main/scala/palmsoc/peripheral/I2C.scala:391:25, :403:17
         readData <= read_val;	// src/main/scala/palmsoc/peripheral/I2C.scala:391:25, :462:24, :464:20
@@ -6690,7 +6696,7 @@ module I2C_AXI(	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7
     .io_cmd_read      (ctrl_reg[3]),	// src/main/scala/palmsoc/peripheral/I2C.scala:333:29, :358:32
     .io_cmd_write     (ctrl_reg[4]),	// src/main/scala/palmsoc/peripheral/I2C.scala:333:29, :359:32
     .io_cmd_ack       (ctrl_reg[5]),	// src/main/scala/palmsoc/peripheral/I2C.scala:333:29, :360:32
-    .io_cmd_valid     (~io_axi_arready_0 & _GEN_3 & ~_GEN_1 & _GEN_2),	// src/main/scala/palmsoc/peripheral/I2C.scala:353:35, :369:36, :390:25, :403:17, :407:46, :418:44, :426:26
+    .io_cmd_valid     (core_io_cmd_valid_REG),	// src/main/scala/palmsoc/peripheral/I2C.scala:361:31
     .io_tx_data       (ctrl_reg[1] ? addr_reg : data_reg),	// src/main/scala/palmsoc/peripheral/I2C.scala:333:29, :334:29, :335:29, :356:32, :365:25
     .io_rx_data       (_core_io_rx_data),
     .io_busy          (_core_io_busy),
@@ -6701,14 +6707,14 @@ module I2C_AXI(	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7
     .io_sda_in        (sda_in),
     .io_sda_oe        (sda_oe),
     .io_clear_rx_full
-      (~_GEN_9 & (&state) & ~(_GEN_5 | _GEN_6 | _GEN_7) & _GEN_8 & io_axi_rready)	// src/main/scala/palmsoc/peripheral/I2C.scala:354:39, :387:22, :403:17, :462:24, :476:30
+      (~_GEN_5 & (&state) & ~(_GEN_1 | _GEN_2 | _GEN_3) & _GEN_4 & io_axi_rready)	// src/main/scala/palmsoc/peripheral/I2C.scala:354:39, :387:22, :403:17, :462:24, :476:30
   );	// src/main/scala/palmsoc/peripheral/I2C.scala:340:20
   assign io_axi_awready = io_axi_arready_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7, :403:17
   assign io_axi_wready = io_axi_wready_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7, :395:18, :403:17
   assign io_axi_bvalid = io_axi_bvalid_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7, :397:18, :403:17
   assign io_axi_arready = io_axi_arready_0;	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7, :403:17
-  assign io_axi_rdata = _GEN_10 ? readData : read_val;	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7, :391:25, :403:17, :462:24, :464:20
-  assign io_axi_rvalid = ~_GEN_9 & (&state);	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7, :354:39, :387:22, :401:18, :403:17
+  assign io_axi_rdata = _GEN_6 ? readData : read_val;	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7, :391:25, :403:17, :462:24, :464:20
+  assign io_axi_rvalid = ~_GEN_5 & (&state);	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7, :354:39, :387:22, :401:18, :403:17
   assign interrupt = int_pending_reg;	// src/main/scala/palmsoc/peripheral/I2C.scala:318:7, :337:32
 endmodule
 
@@ -6760,13 +6766,13 @@ module GPIO_AXI(	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7
   wire            _GEN_5 = reg_addr == 8'h20;	// src/main/scala/palmsoc/peripheral/GPIO.scala:121:29, :124:17, :154:26
   wire            _GEN_6 = reg_addr == 8'h24;	// src/main/scala/palmsoc/peripheral/GPIO.scala:121:29, :124:17, :154:26
   wire            _GEN_7 = reg_addr == 8'h28;	// src/main/scala/palmsoc/peripheral/GPIO.scala:121:29, :124:17, :154:26
-  wire            _GEN_8 = state == 2'h2;	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :124:17, :190:15
+  wire            _GEN_8 = state == 2'h2;	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :124:17, :191:15
   wire            io_axi_bvalid_0 = ~(io_axi_arready_0 | _GEN) & _GEN_8;	// src/main/scala/palmsoc/peripheral/GPIO.scala:114:17, :124:17
   wire [3:0][7:0] _GEN_9 =
     {{_GEN_8 | ~(&state) ? 8'h0 : readAddr[7:0]},
      {8'h0},
      {_GEN_0 ? writeAddr[7:0] : 8'h0},
-     {8'h0}};	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :106:26, :107:25, :121:29, :124:17, :141:{26,44}, :145:{18,30}, :207:27
+     {8'h0}};	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :106:26, :107:25, :121:29, :124:17, :141:{26,44}, :145:{18,30}, :208:27
   assign reg_addr = _GEN_9[state];	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :121:29, :124:17, :141:44
   wire [31:0]     read_value =
     _GEN_1
@@ -6783,7 +6789,7 @@ module GPIO_AXI(	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7
                           ? {14'h0, int_type_reg}
                           : _GEN_6
                               ? {14'h0, int_pol_reg}
-                              : _GEN_7 ? {14'h0, int_stat_reg} : 32'h0;	// src/main/scala/palmsoc/peripheral/GPIO.scala:62:30, :63:27, :64:26, :65:27, :66:29, :67:28, :68:29, :106:26, :121:29, :124:17, :154:26, :210:35, :211:24, :214:{22,37,54,67,69}, :217:22, :220:22, :223:22, :226:22, :229:22, :232:22, :235:22
+                              : _GEN_7 ? {14'h0, int_stat_reg} : 32'h0;	// src/main/scala/palmsoc/peripheral/GPIO.scala:62:30, :63:27, :64:26, :65:27, :66:29, :67:28, :68:29, :106:26, :121:29, :124:17, :154:26, :211:35, :212:24, :215:{22,37,54,67,69}, :218:22, :221:22, :224:22, :227:22, :230:22, :233:22, :236:22
   wire            _GEN_10 = io_axi_arready_0 | _GEN | _GEN_8;	// src/main/scala/palmsoc/peripheral/GPIO.scala:108:25, :124:17
   wire            _GEN_11 = _GEN_10 | ~(&state);	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :108:25, :121:29, :124:17
   always @(posedge clock) begin	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7
@@ -6940,9 +6946,9 @@ module GPIO_AXI(	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7
       end
       else if (_GEN) begin	// src/main/scala/palmsoc/peripheral/GPIO.scala:124:17
         if (_GEN_0)	// src/main/scala/palmsoc/peripheral/GPIO.scala:141:26
-          state <= 2'h2;	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :190:15
+          state <= 2'h2;	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :191:15
       end
-      else if (_GEN_8 ? io_axi_bvalid_0 & io_axi_bready : (&state) & io_axi_rready)	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :114:17, :124:17, :199:{26,44}, :201:15, :243:27, :245:15
+      else if (_GEN_8 ? io_axi_bvalid_0 & io_axi_bready : (&state) & io_axi_rready)	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22, :114:17, :124:17, :200:{26,44}, :202:15, :244:27, :246:15
         state <= 2'h0;	// src/main/scala/palmsoc/peripheral/GPIO.scala:104:22
       if (_GEN_12)	// src/main/scala/palmsoc/peripheral/GPIO.scala:129:27
         writeAddr <= io_axi_awaddr;	// src/main/scala/palmsoc/peripheral/GPIO.scala:106:26
@@ -6953,7 +6959,7 @@ module GPIO_AXI(	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7
       if (_GEN_11) begin	// src/main/scala/palmsoc/peripheral/GPIO.scala:108:25, :124:17
       end
       else	// src/main/scala/palmsoc/peripheral/GPIO.scala:108:25, :124:17
-        readData <= read_value;	// src/main/scala/palmsoc/peripheral/GPIO.scala:108:25, :211:24, :214:22
+        readData <= read_value;	// src/main/scala/palmsoc/peripheral/GPIO.scala:108:25, :212:24, :215:22
     end
     input_reg <= gpio_in;	// src/main/scala/palmsoc/peripheral/GPIO.scala:64:26
     input_prev <= input_reg;	// src/main/scala/palmsoc/peripheral/GPIO.scala:64:26, :71:27
@@ -6962,7 +6968,7 @@ module GPIO_AXI(	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7
   assign io_axi_wready = io_axi_wready_0;	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7, :112:17, :124:17
   assign io_axi_bvalid = io_axi_bvalid_0;	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7, :114:17, :124:17
   assign io_axi_arready = io_axi_arready_0;	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7, :124:17
-  assign io_axi_rdata = _GEN_11 ? readData : read_value;	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7, :108:25, :124:17, :211:24, :214:22
+  assign io_axi_rdata = _GEN_11 ? readData : read_value;	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7, :108:25, :124:17, :212:24, :215:22
   assign io_axi_rvalid = ~_GEN_10 & (&state);	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7, :104:22, :108:25, :118:17, :124:17
   assign gpio_out = output_reg;	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7, :63:27
   assign gpio_oe = direction_reg;	// src/main/scala/palmsoc/peripheral/GPIO.scala:50:7, :62:30
@@ -6988,311 +6994,330 @@ module ConfigurablePalmSoC(	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:
                 io_i2c_interrupt	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:32:14
 );
 
-  wire             _gpio_controller_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
-  wire             _gpio_controller_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
-  wire             _gpio_controller_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
-  wire             _gpio_controller_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
-  wire [31:0]      _gpio_controller_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
-  wire             _gpio_controller_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
-  wire             _gpio_controller_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
-  wire             _i2c_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
-  wire             _i2c_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
-  wire             _i2c_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
-  wire             _i2c_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
-  wire [31:0]      _i2c_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
-  wire             _i2c_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
-  wire             _i2c_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
-  wire             _uart_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
-  wire             _uart_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
-  wire             _uart_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
-  wire             _uart_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
-  wire [31:0]      _uart_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
-  wire             _uart_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
-  wire             _uart_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
-  wire             _intc_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
-  wire             _intc_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
-  wire             _intc_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
-  wire             _intc_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
-  wire [31:0]      _intc_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
-  wire             _intc_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
-  wire             _intc_io_ext_int;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
-  wire             _dma_io_axi_slave_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_axi_slave_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_axi_slave_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_axi_slave_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire [31:0]      _dma_io_axi_slave_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_axi_slave_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire [31:0]      _dma_io_axi_master_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_axi_master_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire [31:0]      _dma_io_axi_master_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire [3:0]       _dma_io_axi_master_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_axi_master_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_axi_master_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire [31:0]      _dma_io_axi_master_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_axi_master_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_axi_master_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _dma_io_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
-  wire             _sram_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
-  wire             _sram_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
-  wire             _sram_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
-  wire             _sram_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
-  wire [31:0]      _sram_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
-  wire             _sram_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
-  wire             _bootrom_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
-  wire             _bootrom_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
-  wire             _bootrom_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
-  wire             _bootrom_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
-  wire [31:0]      _bootrom_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
-  wire             _bootrom_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
-  wire             _acceleratorXbar_io_masters_0_aw_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
-  wire             _acceleratorXbar_io_masters_0_w_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
-  wire             _acceleratorXbar_io_masters_0_b_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
-  wire             _acceleratorXbar_io_masters_0_ar_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
-  wire             _acceleratorXbar_io_masters_0_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
-  wire             _peripheralXbar_io_masters_0_aw_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_masters_0_w_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_masters_0_b_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_masters_0_ar_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_masters_0_r_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_masters_0_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_slaves_0_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_0_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_slaves_0_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [3:0]       _peripheralXbar_io_slaves_0_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_0_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_0_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_slaves_0_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_0_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_0_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_slaves_4_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_4_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_slaves_4_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [3:0]       _peripheralXbar_io_slaves_4_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_4_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_4_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_slaves_4_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_4_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_4_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_slaves_6_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_6_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_slaves_6_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [3:0]       _peripheralXbar_io_slaves_6_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_6_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_6_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire [31:0]      _peripheralXbar_io_slaves_6_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_6_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _peripheralXbar_io_slaves_6_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
-  wire             _mainXbar_io_masters_0_aw_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_masters_0_w_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_masters_0_b_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_masters_0_ar_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_masters_0_r_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_masters_0_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_masters_1_aw_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_masters_1_w_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_masters_1_b_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_masters_1_ar_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_masters_1_r_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_masters_1_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_0_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_0_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_0_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_0_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_0_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_0_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_2_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_2_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_2_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [3:0]       _mainXbar_io_slaves_2_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_2_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_2_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_2_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_2_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_2_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_3_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_3_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_3_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [3:0]       _mainXbar_io_slaves_3_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_3_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_3_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_3_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_3_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_3_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_4_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_4_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_4_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_4_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_4_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_4_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_4_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_5_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_5_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_5_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_5_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_5_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_5_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_5_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_5_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_6_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_6_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_6_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_6_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_6_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _mainXbar_io_slaves_6_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_6_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire             _mainXbar_io_slaves_6_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
-  wire [31:0]      _core_io_imem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
-  wire [31:0]      _core_io_dmem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
-  wire [31:0]      _core_io_dmem_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
-  wire             _core_io_dmem_write;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
-  wire             _core_io_dmem_read;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
-  wire [1:0]       _core_io_dmem_size;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
-  reg  [2:0]       bridgeState;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28
-  reg  [31:0]      imem_addr_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30
-  reg  [31:0]      dmem_addr_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:258:30
-  reg  [31:0]      dmem_wdata_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:259:31
-  reg  [3:0]       dmem_strb_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:260:30
-  reg              dmem_just_completed;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:261:36
-  wire             _GEN = bridgeState == 3'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :281:23
-  wire             _GEN_0 = bridgeState == 3'h1;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :281:23, :307:21
-  wire             _GEN_1 = bridgeState == 3'h2;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :281:23, :316:21
-  wire             _GEN_2 = imem_addr_reg == _core_io_imem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :257:30, :276:21, :324:38, :326:24, :330:29
-  wire             _GEN_3 = _GEN | _GEN_0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:276:21, :281:23
-  wire [31:0]      core_io_imem_data =
-    _GEN_3 | ~(_GEN_1 & _mainXbar_io_masters_0_r_rvalid & _GEN_2)
-      ? 32'h0
-      : _mainXbar_io_masters_0_r_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :276:21, :281:23, :323:29, :324:38, :326:24, :330:29
-  wire             _GEN_4 = bridgeState == 3'h3;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :281:23, :298:23
-  wire             _GEN_5 = _GEN | _GEN_0 | _GEN_1;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:264:20, :281:23
-  wire             _GEN_6 = bridgeState == 3'h4;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :281:23, :362:21
-  wire             _GEN_7 = _GEN | _GEN_0 | _GEN_1 | _GEN_4;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:267:18, :281:23
-  wire             _GEN_8 = _GEN_7 | ~_GEN_6;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:267:18, :281:23
-  wire             _GEN_9 = bridgeState == 3'h5;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :281:23, :372:21
-  wire             _GEN_10 = _GEN | _GEN_0 | _GEN_1 | _GEN_4 | _GEN_6;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:270:19, :281:23
-  wire             _GEN_11 = bridgeState == 3'h6;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :281:23, :301:23
-  wire             _GEN_12 = _GEN_1 | _GEN_4 | _GEN_6 | _GEN_9;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:271:20, :281:23
-  wire [31:0]      _GEN_13 = _GEN_12 | ~_GEN_11 ? 32'h0 : dmem_addr_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:258:30, :271:20, :281:23
-  wire [7:0][31:0] _GEN_14 =
-    {{_GEN_13}, {_GEN_13}, {32'h0}, {32'h0}, {32'h0}, {32'h0}, {imem_addr_reg}, {32'h0}};	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30, :271:20, :281:23, :312:24
-  wire             _GEN_15 = _GEN_4 | _GEN_6 | _GEN_9 | _GEN_11;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:274:19, :281:23
-  wire             _GEN_16 = (&bridgeState) & _mainXbar_io_masters_0_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :254:28, :278:22, :281:23, :398:29, :399:28
+  wire        _gpio_controller_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
+  wire        _gpio_controller_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
+  wire        _gpio_controller_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
+  wire        _gpio_controller_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
+  wire [31:0] _gpio_controller_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
+  wire        _gpio_controller_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
+  wire        _gpio_controller_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
+  wire        _i2c_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
+  wire        _i2c_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
+  wire        _i2c_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
+  wire        _i2c_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
+  wire [31:0] _i2c_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
+  wire        _i2c_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
+  wire        _i2c_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:207:21
+  wire        _uart_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
+  wire        _uart_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
+  wire        _uart_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
+  wire        _uart_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
+  wire [31:0] _uart_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
+  wire        _uart_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
+  wire        _uart_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:188:22
+  wire        _intc_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
+  wire        _intc_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
+  wire        _intc_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
+  wire        _intc_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
+  wire [31:0] _intc_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
+  wire        _intc_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
+  wire        _intc_io_ext_int;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
+  wire        _dma_io_axi_slave_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_axi_slave_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_axi_slave_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_axi_slave_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire [31:0] _dma_io_axi_slave_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_axi_slave_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire [31:0] _dma_io_axi_master_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_axi_master_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire [31:0] _dma_io_axi_master_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire [3:0]  _dma_io_axi_master_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_axi_master_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_axi_master_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire [31:0] _dma_io_axi_master_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_axi_master_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_axi_master_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _dma_io_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
+  wire        _sram_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
+  wire        _sram_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
+  wire        _sram_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
+  wire        _sram_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
+  wire [31:0] _sram_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
+  wire        _sram_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:163:20
+  wire        _bootrom_io_axi_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
+  wire        _bootrom_io_axi_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
+  wire        _bootrom_io_axi_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
+  wire        _bootrom_io_axi_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
+  wire [31:0] _bootrom_io_axi_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
+  wire        _bootrom_io_axi_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:156:23
+  wire        _acceleratorXbar_io_masters_0_aw_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
+  wire        _acceleratorXbar_io_masters_0_w_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
+  wire        _acceleratorXbar_io_masters_0_b_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
+  wire        _acceleratorXbar_io_masters_0_ar_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
+  wire        _acceleratorXbar_io_masters_0_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:151:31
+  wire        _peripheralXbar_io_masters_0_aw_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_masters_0_w_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_masters_0_b_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_masters_0_ar_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_masters_0_r_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_masters_0_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_slaves_0_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_0_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_slaves_0_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [3:0]  _peripheralXbar_io_slaves_0_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_0_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_0_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_slaves_0_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_0_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_0_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_slaves_4_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_4_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_slaves_4_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [3:0]  _peripheralXbar_io_slaves_4_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_4_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_4_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_slaves_4_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_4_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_4_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_slaves_6_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_6_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_slaves_6_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [3:0]  _peripheralXbar_io_slaves_6_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_6_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_6_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire [31:0] _peripheralXbar_io_slaves_6_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_6_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _peripheralXbar_io_slaves_6_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:150:30
+  wire        _mainXbar_io_masters_0_aw_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_masters_0_w_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_masters_0_b_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_masters_0_ar_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_masters_0_r_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_masters_0_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_masters_1_aw_awready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_masters_1_w_wready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_masters_1_b_bvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_masters_1_ar_arready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_masters_1_r_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_masters_1_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_0_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_0_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_0_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_0_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_0_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_0_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_2_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_2_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_2_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [3:0]  _mainXbar_io_slaves_2_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_2_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_2_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_2_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_2_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_2_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_3_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_3_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_3_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [3:0]  _mainXbar_io_slaves_3_w_wstrb;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_3_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_3_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_3_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_3_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_3_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_4_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_4_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_4_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_4_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_4_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_4_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_4_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_5_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_5_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_5_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_5_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_5_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_5_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_5_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_5_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_6_aw_awaddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_6_aw_awvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_6_w_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_6_w_wvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_6_b_bready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _mainXbar_io_slaves_6_ar_araddr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_6_ar_arvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire        _mainXbar_io_slaves_6_r_rready;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
+  wire [31:0] _core_io_imem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
+  wire [31:0] _core_io_dmem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
+  wire [31:0] _core_io_dmem_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
+  wire        _core_io_dmem_write;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
+  wire        _core_io_dmem_read;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
+  wire [1:0]  _core_io_dmem_size;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
+  reg  [3:0]  bridgeState;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28
+  reg  [31:0] imem_addr_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30
+  reg  [31:0] dmem_addr_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:258:30
+  reg  [31:0] dmem_wdata_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:259:31
+  reg  [3:0]  dmem_strb_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:260:30
+  reg         dmem_just_completed;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:261:36
+  reg         core_imem_valid_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:277:36
+  reg  [31:0] core_imem_data_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:278:31
+  reg         core_dmem_valid_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:279:36
+  reg  [31:0] core_dmem_rdata_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:280:32
+  wire        _GEN = bridgeState == 4'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23
+  wire        _GEN_0 = bridgeState == 4'h1;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :313:21
+  wire        _GEN_1 = bridgeState == 4'h2;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :322:21
+  wire        _GEN_2 = _GEN | _GEN_0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:278:31, :287:23
+  wire        _GEN_3 = bridgeState == 4'h3;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :338:23
+  wire        _GEN_4 = bridgeState == 4'h4;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :304:23
+  wire        _GEN_5 = _GEN | _GEN_0 | _GEN_1 | _GEN_3;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:264:20, :287:23
+  wire        _GEN_6 = bridgeState == 4'h5;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :374:21
+  wire        _GEN_7 = _GEN | _GEN_0 | _GEN_1 | _GEN_3 | _GEN_4;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:267:18, :287:23
+  wire        _GEN_8 = _GEN_7 | ~_GEN_6;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:267:18, :287:23
+  wire        _GEN_9 = bridgeState == 4'h6;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :384:21
+  wire        _GEN_10 = _GEN_0 | _GEN_1 | _GEN_3 | _GEN_4 | _GEN_6;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:270:19, :287:23
+  wire        _GEN_11 = _GEN | _GEN_10;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:270:19, :287:23
+  wire        _GEN_12 = bridgeState == 4'h7;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :307:23
+  wire        _GEN_13 = _GEN_1 | _GEN_3 | _GEN_4 | _GEN_6 | _GEN_9;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:271:20, :287:23
+  wire        _GEN_14 = bridgeState == 4'h8;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :403:21
+  wire        _GEN_15 = _GEN_3 | _GEN_4 | _GEN_6 | _GEN_9 | _GEN_12;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:274:19, :287:23
   always @(posedge clock) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:28:7
+    automatic logic _GEN_16;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:278:31, :330:38, :332:24, :336:30
+    automatic logic _GEN_17;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:278:31, :329:29, :330:38, :332:24, :336:30
+    automatic logic _GEN_18;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:280:32, :287:23, :410:29, :411:29
+    _GEN_16 = imem_addr_reg == _core_io_imem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :257:30, :278:31, :330:38, :332:24, :336:30
+    _GEN_17 = _mainXbar_io_masters_0_r_rvalid & _GEN_16;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :278:31, :329:29, :330:38, :332:24, :336:30
+    _GEN_18 = _GEN_14 & _mainXbar_io_masters_0_r_rvalid;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :280:32, :287:23, :410:29, :411:29
     if (reset) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:28:7
-      bridgeState <= 3'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28
+      bridgeState <= 4'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28
       imem_addr_reg <= 32'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30
       dmem_addr_reg <= 32'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:258:30
       dmem_wdata_reg <= 32'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:259:31
       dmem_strb_reg <= 4'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:260:30
       dmem_just_completed <= 1'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:58:21, :261:36
+      core_imem_valid_reg <= 1'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:58:21, :277:36
+      core_dmem_valid_reg <= 1'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:58:21, :279:36
     end
     else begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:28:7
-      automatic logic            _GEN_17;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:286:32
-      automatic logic            _GEN_18;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:286:54
-      automatic logic            _GEN_19;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:292:37
-      automatic logic            _GEN_20;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:292:37
-      automatic logic            _GEN_21 = ~_GEN_11 & _GEN_16 | dmem_just_completed;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:261:36, :271:20, :278:22, :281:23, :398:29, :399:28
-      automatic logic [7:0][2:0] _GEN_22;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:281:23, :286:79, :315:31, :323:29, :361:31, :371:29, :379:29, :390:31
-      automatic logic [7:0]      _GEN_23;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:261:36, :270:19, :281:23, :286:79, :379:29
-      _GEN_17 = _core_io_dmem_write | _core_io_dmem_read;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :286:32
-      _GEN_18 = _GEN_17 & ~dmem_just_completed;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:261:36, :286:{32,54,57}
-      _GEN_19 = _core_io_dmem_size == 2'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :292:37
-      _GEN_20 = _core_io_dmem_size == 2'h1;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :292:37
-      _GEN_22 =
-        {{_GEN_16 ? 3'h0 : bridgeState},
-         {_mainXbar_io_masters_0_ar_arready ? 3'h7 : bridgeState},
-         {_mainXbar_io_masters_0_b_bvalid ? 3'h0 : bridgeState},
-         {_mainXbar_io_masters_0_w_wready ? 3'h5 : bridgeState},
-         {_mainXbar_io_masters_0_aw_awready ? 3'h4 : bridgeState},
-         {_mainXbar_io_masters_0_r_rvalid
-            ? (_GEN_2
-                 ? (_core_io_dmem_write ? 3'h3 : _core_io_dmem_read ? 3'h6 : 3'h0)
-                 : 3'h0)
-            : bridgeState},
-         {_mainXbar_io_masters_0_ar_arready ? 3'h2 : bridgeState},
-         {_GEN_18 ? (_core_io_dmem_write ? 3'h3 : 3'h6) : 3'h1}};	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :149:24, :254:28, :276:21, :278:22, :281:23, :286:{54,79}, :287:34, :298:23, :301:23, :307:21, :315:31, :316:21, :323:29, :324:38, :326:24, :328:23, :330:29, :334:36, :345:25, :346:41, :348:25, :351:25, :361:31, :362:21, :371:29, :372:21, :379:29, :382:21, :390:31, :391:21, :398:29, :399:28, :402:21
-      bridgeState <= _GEN_22[bridgeState];	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :281:23, :286:79, :315:31, :323:29, :361:31, :371:29, :379:29, :390:31
-      if (~_GEN | _GEN_18) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30, :281:23, :286:{54,79}
-      end
-      else	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30, :281:23, :286:79
-        imem_addr_reg <= _core_io_imem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :257:30
-      if (_GEN) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:281:23
-        if (_GEN_18)	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:286:54
-          dmem_addr_reg <= _core_io_dmem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :258:30
-        if (_GEN_18 & _core_io_dmem_write) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :259:31, :286:{54,79}, :287:34, :289:26
-          automatic logic [4:0] _strb_T_4 = 5'h3 << {3'h0, _core_io_dmem_addr[1], 1'h0};	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:58:21, :144:20, :294:{36,57}
-          dmem_wdata_reg <= _core_io_dmem_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :259:31
-          dmem_strb_reg <=
-            _GEN_19 ? 4'h1 << _core_io_dmem_addr[1:0] : _GEN_20 ? _strb_T_4[3:0] : 4'hF;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :260:30, :291:33, :292:37, :293:{28,36,56}, :294:{28,36}
-        end
-      end
-      else begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:281:23
-        if (_GEN_0 | ~(_GEN_1 & _mainXbar_io_masters_0_r_rvalid & _GEN_2 & _GEN_17)) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :258:30, :276:21, :281:23, :286:32, :323:29, :324:38, :326:24, :330:29, :334:36, :335:27, :346:41, :347:27
-        end
-        else	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:258:30, :281:23
-          dmem_addr_reg <= _core_io_dmem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :258:30
-        if (_GEN_0
-            | ~(_GEN_1 & _mainXbar_io_masters_0_r_rvalid & _GEN_2
-                & _core_io_dmem_write)) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :149:24, :259:31, :260:30, :276:21, :281:23, :323:29, :324:38, :326:24, :330:29, :334:36, :336:28
-        end
-        else begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:260:30, :281:23
-          automatic logic [4:0] _strb_T_9 = 5'h3 << {3'h0, _core_io_dmem_addr[1], 1'h0};	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:58:21, :144:20, :294:36, :341:{38,59}
-          dmem_wdata_reg <= _core_io_dmem_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :259:31
-          dmem_strb_reg <=
-            _GEN_19 ? 4'h1 << _core_io_dmem_addr[1:0] : _GEN_20 ? _strb_T_9[3:0] : 4'hF;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :260:30, :291:33, :292:37, :293:36, :339:39, :340:{30,38,58}, :341:{30,38}
-        end
-      end
+      automatic logic             _GEN_19;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:292:32
+      automatic logic             _GEN_20;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:292:54
+      automatic logic             _GEN_21;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:298:37
+      automatic logic             _GEN_22;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:298:37
+      automatic logic [15:0][3:0] _GEN_23;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :292:79, :321:31, :329:29, :348:32, :373:31, :383:29, :391:29, :402:31, :410:29, :420:19
+      _GEN_19 = _core_io_dmem_write | _core_io_dmem_read;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :292:32
+      _GEN_20 = _GEN_19 & ~dmem_just_completed;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:261:36, :292:{32,54,57}
+      _GEN_21 = _core_io_dmem_size == 2'h0;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :298:37
+      _GEN_22 = _core_io_dmem_size == 2'h1;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :298:37
       _GEN_23 =
-        {{_GEN_21},
-         {_GEN_21},
-         {_mainXbar_io_masters_0_b_bvalid | dmem_just_completed},
-         {dmem_just_completed},
-         {dmem_just_completed},
-         {dmem_just_completed},
-         {dmem_just_completed},
-         {_GEN_18 & dmem_just_completed}};	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :261:36, :270:19, :281:23, :286:{54,79}, :305:29, :379:29, :381:29
-      dmem_just_completed <= _GEN_23[bridgeState];	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :261:36, :270:19, :281:23, :286:79, :379:29
+        {{bridgeState},
+         {bridgeState},
+         {bridgeState},
+         {bridgeState},
+         {bridgeState},
+         {bridgeState},
+         {4'h0},
+         {_mainXbar_io_masters_0_r_rvalid ? 4'h9 : bridgeState},
+         {_mainXbar_io_masters_0_ar_arready ? 4'h8 : bridgeState},
+         {_mainXbar_io_masters_0_b_bvalid ? 4'h9 : bridgeState},
+         {_mainXbar_io_masters_0_w_wready ? 4'h6 : bridgeState},
+         {_mainXbar_io_masters_0_aw_awready ? 4'h5 : bridgeState},
+         {_core_io_dmem_write ? 4'h4 : _core_io_dmem_read ? 4'h7 : 4'h0},
+         {_mainXbar_io_masters_0_r_rvalid ? (_GEN_16 ? 4'h3 : 4'h0) : bridgeState},
+         {_mainXbar_io_masters_0_ar_arready ? 4'h2 : bridgeState},
+         {_GEN_20 ? (_core_io_dmem_write ? 4'h4 : 4'h7) : 4'h1}};	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :149:24, :254:28, :278:31, :287:23, :292:{54,79}, :293:34, :304:23, :307:23, :313:21, :321:31, :322:21, :329:29, :330:38, :332:24, :334:23, :336:30, :338:23, :348:32, :359:21, :360:37, :362:21, :365:21, :373:31, :374:21, :383:29, :384:21, :391:29, :394:21, :402:31, :403:21, :410:29, :414:21, :420:19
+      bridgeState <= _GEN_23[bridgeState];	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :287:23, :292:79, :321:31, :329:29, :348:32, :373:31, :383:29, :391:29, :402:31, :410:29, :420:19
+      if (~_GEN | _GEN_20) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30, :287:23, :292:{54,79}
+      end
+      else	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30, :287:23, :292:79
+        imem_addr_reg <= _core_io_imem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :257:30
+      if (_GEN) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:287:23
+        if (_GEN_20)	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:292:54
+          dmem_addr_reg <= _core_io_dmem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :258:30
+        if (_GEN_20 & _core_io_dmem_write) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :259:31, :292:{54,79}, :293:34, :295:26
+          automatic logic [4:0] _strb_T_4 = 5'h3 << {3'h0, _core_io_dmem_addr[1], 1'h0};	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:58:21, :144:20, :299:36, :300:{36,57}
+          dmem_wdata_reg <= _core_io_dmem_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :259:31
+          dmem_strb_reg <=
+            _GEN_21 ? 4'h1 << _core_io_dmem_addr[1:0] : _GEN_22 ? _strb_T_4[3:0] : 4'hF;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :260:30, :297:33, :298:37, :299:{28,36,56}, :300:{28,36}, :313:21
+        end
+        dmem_just_completed <= _GEN_20 & dmem_just_completed;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:261:36, :292:{54,79}, :311:29
+      end
+      else begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:287:23
+        automatic logic _GEN_24 = _GEN_0 | _GEN_1;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:259:31, :287:23
+        if (_GEN_24 | ~(_GEN_3 & _GEN_19)) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:258:30, :259:31, :287:23, :292:32, :348:32, :349:23, :360:37, :361:23
+        end
+        else	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:258:30, :287:23
+          dmem_addr_reg <= _core_io_dmem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :258:30
+        if (_GEN_24 | ~(_GEN_3 & _core_io_dmem_write)) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :259:31, :260:30, :287:23, :348:32, :350:24
+        end
+        else begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:260:30, :287:23
+          automatic logic [4:0] _strb_T_9 = 5'h3 << {3'h0, _core_io_dmem_addr[1], 1'h0};	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:58:21, :144:20, :299:36, :300:36, :355:{34,55}
+          dmem_wdata_reg <= _core_io_dmem_wdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :259:31
+          dmem_strb_reg <=
+            _GEN_21 ? 4'h1 << _core_io_dmem_addr[1:0] : _GEN_22 ? _strb_T_9[3:0] : 4'hF;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20, :260:30, :297:33, :298:37, :313:21, :353:35, :354:{26,34,54}, :355:{26,34}
+        end
+        if (~_GEN_10)	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:270:19, :287:23
+          dmem_just_completed <=
+            _GEN_9
+              ? _mainXbar_io_masters_0_b_bvalid | dmem_just_completed
+              : ~_GEN_12 & _GEN_18 | dmem_just_completed;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :261:36, :271:20, :280:32, :287:23, :391:29, :393:29, :410:29, :411:29
+      end
+      if (~_GEN_2)	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:274:19, :278:31, :287:23
+        core_imem_valid_reg <=
+          _GEN_1 ? _GEN_17 | core_imem_valid_reg : ~_GEN_3 & core_imem_valid_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:277:36, :278:31, :287:23, :329:29, :330:38, :332:24, :336:30, :337:31, :344:27
+      if (~_GEN_11) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:270:19, :287:23
+        if (_GEN_9)	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:287:23
+          core_dmem_valid_reg <= _mainXbar_io_masters_0_b_bvalid | core_dmem_valid_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :279:36, :391:29, :392:29
+        else if (~_GEN_12)	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:271:20, :287:23
+          core_dmem_valid_reg <=
+            _GEN_14
+              ? _mainXbar_io_masters_0_r_rvalid | core_dmem_valid_reg
+              : bridgeState != 4'h9 & core_dmem_valid_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :254:28, :279:36, :287:23, :394:21, :410:29, :412:29, :419:27
+      end
     end
+    if (_GEN_2 | ~(_GEN_1 & _GEN_17)) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:278:31, :287:23, :329:29, :330:38, :332:24, :336:30
+    end
+    else	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:278:31, :287:23
+      core_imem_data_reg <= _mainXbar_io_masters_0_r_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :278:31
+    if (_GEN | _GEN_0 | _GEN_1 | _GEN_15 | ~_GEN_18) begin	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:274:19, :280:32, :287:23, :410:29, :411:29
+    end
+    else	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:280:32, :287:23
+      core_dmem_rdata_reg <= _mainXbar_io_masters_0_r_rdata;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :280:32
   end // always @(posedge)
   RV32Core core (	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
     .clock                 (clock),
     .reset                 (reset),
     .io_imem_addr          (_core_io_imem_addr),
-    .io_imem_data          (core_io_imem_data),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:276:21, :281:23
-    .io_imem_valid         (~_GEN_3 & _GEN_1 & _mainXbar_io_masters_0_r_rvalid & _GEN_2),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :276:21, :277:22, :281:23, :323:29, :324:38, :326:24, :330:29
+    .io_imem_data          (core_imem_data_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:278:31
+    .io_imem_valid         (core_imem_valid_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:277:36
     .io_dmem_addr          (_core_io_dmem_addr),
     .io_dmem_wdata         (_core_io_dmem_wdata),
-    .io_dmem_rdata
-      (_GEN | _GEN_0 | _GEN_1 | _GEN_15 | ~_GEN_16
-         ? 32'h0
-         : _mainXbar_io_masters_0_r_rdata),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :274:19, :278:22, :281:23, :398:29, :399:28
+    .io_dmem_rdata         (core_dmem_rdata_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:280:32
     .io_dmem_write         (_core_io_dmem_write),
     .io_dmem_read          (_core_io_dmem_read),
     .io_dmem_size          (_core_io_dmem_size),
-    .io_dmem_valid
-      (~_GEN_10
-       & (_GEN_9
-            ? _mainXbar_io_masters_0_b_bvalid
-            : ~_GEN_11 & (&bridgeState) & _mainXbar_io_masters_0_r_rvalid)),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24, :254:28, :270:19, :271:20, :279:22, :281:23, :379:29, :398:29
+    .io_dmem_valid         (core_dmem_valid_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:279:36
     .io_external_interrupt (_intc_io_ext_int)	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:177:20
   );	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:144:20
   PalmVMainInterconnect mainXbar (	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:149:24
     .clock                   (clock),
     .reset                   (reset),
-    .io_masters_0_aw_awaddr  (_GEN_5 | ~_GEN_4 ? 32'h0 : dmem_addr_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:258:30, :264:20, :281:23
-    .io_masters_0_aw_awvalid (~_GEN_5 & _GEN_4),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:264:20, :266:21, :281:23
+    .io_masters_0_aw_awaddr  (_GEN_5 | ~_GEN_4 ? 32'h0 : dmem_addr_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:258:30, :264:20, :287:23
+    .io_masters_0_aw_awvalid (~_GEN_5 & _GEN_4),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:264:20, :266:21, :287:23
     .io_masters_0_aw_awready (_mainXbar_io_masters_0_aw_awready),
-    .io_masters_0_w_wdata    (_GEN_8 ? 32'h0 : dmem_wdata_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:259:31, :267:18, :281:23
-    .io_masters_0_w_wstrb    (_GEN_8 ? 4'h0 : dmem_strb_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:260:30, :267:18, :268:18, :281:23
-    .io_masters_0_w_wvalid   (~_GEN_7 & _GEN_6),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:267:18, :269:19, :281:23
+    .io_masters_0_w_wdata    (_GEN_8 ? 32'h0 : dmem_wdata_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:259:31, :267:18, :287:23
+    .io_masters_0_w_wstrb    (_GEN_8 ? 4'h0 : dmem_strb_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:260:30, :267:18, :268:18, :287:23
+    .io_masters_0_w_wvalid   (~_GEN_7 & _GEN_6),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:267:18, :269:19, :287:23
     .io_masters_0_w_wready   (_mainXbar_io_masters_0_w_wready),
     .io_masters_0_b_bvalid   (_mainXbar_io_masters_0_b_bvalid),
-    .io_masters_0_b_bready   (~_GEN_10 & _GEN_9),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:270:19, :281:23
-    .io_masters_0_ar_araddr  (_GEN_14[bridgeState]),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :271:20, :281:23, :312:24
-    .io_masters_0_ar_arvalid (~_GEN & (_GEN_0 | ~_GEN_12 & _GEN_11)),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30, :271:20, :273:21, :281:23, :286:79, :313:25
+    .io_masters_0_b_bready   (~_GEN_11 & _GEN_9),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:270:19, :287:23
+    .io_masters_0_ar_araddr
+      (_GEN
+         ? 32'h0
+         : _GEN_0 ? imem_addr_reg : _GEN_13 | ~_GEN_12 ? 32'h0 : dmem_addr_reg),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30, :258:30, :271:20, :287:23, :318:24
+    .io_masters_0_ar_arvalid (~_GEN & (_GEN_0 | ~_GEN_13 & _GEN_12)),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:257:30, :271:20, :273:21, :287:23, :292:79, :319:25
     .io_masters_0_ar_arready (_mainXbar_io_masters_0_ar_arready),
     .io_masters_0_r_rdata    (_mainXbar_io_masters_0_r_rdata),
     .io_masters_0_r_rvalid   (_mainXbar_io_masters_0_r_rvalid),
-    .io_masters_0_r_rready   (~_GEN_3 & (_GEN_1 | ~_GEN_15 & (&bridgeState))),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:254:28, :274:19, :276:21, :277:22, :281:23, :321:23
+    .io_masters_0_r_rready   (~_GEN_2 & (_GEN_1 | ~_GEN_15 & _GEN_14)),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:274:19, :278:31, :287:23, :327:23
     .io_masters_1_aw_awaddr  (_dma_io_axi_master_awaddr),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
     .io_masters_1_aw_awvalid (_dma_io_axi_master_awvalid),	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:173:19
     .io_masters_1_aw_awready (_mainXbar_io_masters_1_aw_awready),
@@ -7634,7 +7659,7 @@ module ConfigurablePalmSoC(	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:
     .interrupt      (_gpio_controller_interrupt)
   );	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:224:33
   assign io_pc = _core_io_imem_addr;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:28:7, :144:20
-  assign io_instruction = core_io_imem_data;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:28:7, :276:21, :281:23
+  assign io_instruction = core_imem_data_reg;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:28:7, :278:31
   assign io_gpio_interrupt = _gpio_controller_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:28:7, :224:33
   assign io_uart_interrupt = _uart_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:28:7, :188:22
   assign io_i2c_interrupt = _i2c_interrupt;	// src/main/scala/palmsoc/ConfigurablePalmSoC.scala:28:7, :207:21

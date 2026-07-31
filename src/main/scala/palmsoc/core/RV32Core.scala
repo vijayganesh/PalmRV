@@ -89,7 +89,7 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
   hazard.io.id_rs2 := decode.io.rs2_addr
   hazard.io.id_rs1_used := decode.io.rs1_used
   hazard.io.id_rs2_used := decode.io.rs2_used
-  hazard.io.ex_mem_read := decode.io.mem_read
+  hazard.io.ex_wb_sel := decode.io.wb_sel
   hazard.io.ex_rd := decode.io.rd_addr
   
   // Register file read

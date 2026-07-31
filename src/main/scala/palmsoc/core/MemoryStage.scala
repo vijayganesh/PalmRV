@@ -107,7 +107,10 @@ class MemoryStage extends Module {
     3.U -> io.csr_rdata
   ))
   
-  io.forward_data_out := wb_data
+  // Forwarding data selection: only forward ALU and PC+4.
+  // Loads (1) and CSRs (3) will cause a stall in ID, and their results
+  // will be forwarded from the WB stage instead, breaking the critical path.
+  io.forward_data_out := Mux(io.wb_sel_in === 2.U, io.pc_plus_4_in, io.alu_result_in)
   
   // Pipeline registers
   val wb_data_reg = RegInit(0.U(32.W))
