@@ -168,10 +168,8 @@ class GPIOTest extends AnyFunSpec with ChiselSim {
       // Read INPUT register
       dut.io.axi.araddr.poke(0x0C.U)
       dut.io.axi.arvalid.poke(true.B)
+      while (!dut.io.axi.arready.peek().litToBoolean) { dut.clock.step(1) }
       dut.clock.step(1)
-      while (!dut.io.axi.arready.peek().litToBoolean) {
-        dut.clock.step(1)
-      }
       dut.io.axi.arvalid.poke(false.B)
       
       dut.io.axi.rready.poke(true.B)
@@ -190,39 +188,41 @@ class GPIOTest extends AnyFunSpec with ChiselSim {
       // Configure all pins as outputs
       dut.io.axi.awaddr.poke(0x04.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x3FFFF.U)
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.bready.poke(false.B)
       dut.clock.step(1)
       
       // Set bits 0, 2, 4 using SET register
       dut.io.axi.awaddr.poke(0x10.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x15.U)  // Binary: 010101
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
-        dut.io.axi.bready.poke(false.B)
+      dut.clock.step(1)
+      dut.io.axi.bready.poke(false.B)
         dut.clock.step(1)
         
         dut.gpio_out.expect(0x15.U)
@@ -236,58 +236,61 @@ class GPIOTest extends AnyFunSpec with ChiselSim {
       // Configure pins as outputs and set all high
       dut.io.axi.awaddr.poke(0x04.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x3FFFF.U)
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.bready.poke(false.B)
       dut.clock.step(1)
       
       // Set all outputs high
       dut.io.axi.awaddr.poke(0x08.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x3FFFF.U)
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.bready.poke(false.B)
       dut.clock.step(1)
       
       // Clear bits 1, 3, 5 using CLEAR register
       dut.io.axi.awaddr.poke(0x14.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x2A.U)  // Binary: 101010
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
-        dut.io.axi.bready.poke(false.B)
+      dut.clock.step(1)
+      dut.io.axi.bready.poke(false.B)
         dut.clock.step(1)
         
         dut.gpio_out.expect(0x3FFD5.U)  // All bits set except 1, 3, 5
@@ -301,58 +304,61 @@ class GPIOTest extends AnyFunSpec with ChiselSim {
       // Configure pins and set initial value
       dut.io.axi.awaddr.poke(0x04.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x3FFFF.U)
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.bready.poke(false.B)
       dut.clock.step(1)
       
       // Set output to 0xAAAA
       dut.io.axi.awaddr.poke(0x08.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x2AAAA.U)
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.bready.poke(false.B)
       dut.clock.step(1)
       
       // Toggle all bits
       dut.io.axi.awaddr.poke(0x18.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x3FFFF.U)
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
-        dut.io.axi.bready.poke(false.B)
+      dut.clock.step(1)
+      dut.io.axi.bready.poke(false.B)
         dut.clock.step(1)
         
         dut.gpio_out.expect(0x15555.U)  // Toggled pattern
@@ -363,62 +369,83 @@ class GPIOTest extends AnyFunSpec with ChiselSim {
       simulate(new GPIO_AXI(config, 18)) { dut =>
       dut.clock.step(1)
       
-      // Enable interrupt for pin 0, edge-triggered, rising edge
-      dut.io.axi.awaddr.poke(0x1C.U)  // INT_EN
-      dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
-      while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
-      dut.io.axi.awvalid.poke(false.B)
-      
-      dut.io.axi.wdata.poke(0x01.U)
-      dut.io.axi.wstrb.poke(0xF.U)
-      dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
-      while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
-      dut.io.axi.wvalid.poke(false.B)
-      
-      dut.io.axi.bready.poke(true.B)
-      while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
-      dut.io.axi.bready.poke(false.B)
-      dut.clock.step(1)
-      
-      // Set INT_TYPE to edge (1)
+      // 1. Set INT_TYPE to edge (1)
       dut.io.axi.awaddr.poke(0x20.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x01.U)
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.bready.poke(false.B)
       dut.clock.step(1)
       
-      // Set INT_POL to rising (1)
+      // 2. Set INT_POL to rising (1)
       dut.io.axi.awaddr.poke(0x24.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x01.U)
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.bready.poke(false.B)
-        dut.clock.step(1)
+      dut.clock.step(1)
+      
+      // 3. Enable interrupt for pin 0 (now safely configured as edge-triggered)
+      dut.io.axi.awaddr.poke(0x1C.U)  // INT_EN
+      dut.io.axi.awvalid.poke(true.B)
+      while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
+      dut.io.axi.awvalid.poke(false.B)
+      
+      dut.io.axi.wdata.poke(0x01.U)
+      dut.io.axi.wstrb.poke(0xF.U)
+      dut.io.axi.wvalid.poke(true.B)
+      while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
+      dut.io.axi.wvalid.poke(false.B)
+      
+      dut.io.axi.bready.poke(true.B)
+      while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
+      dut.io.axi.bready.poke(false.B)
+      dut.clock.step(1)
+      
+      // Clear any spurious interrupt that might have somehow fired
+      dut.io.axi.awaddr.poke(0x28.U)  // INT_STAT
+      dut.io.axi.awvalid.poke(true.B)
+      while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
+      dut.io.axi.awvalid.poke(false.B)
+      dut.io.axi.wdata.poke("hFFFFFFFF".U)
+      dut.io.axi.wstrb.poke(0xF.U)
+      dut.io.axi.wvalid.poke(true.B)
+      while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
+      dut.io.axi.wvalid.poke(false.B)
+      dut.io.axi.bready.poke(true.B)
+      while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
+      dut.io.axi.bready.poke(false.B)
+      dut.clock.step(1)
         
         // Apply rising edge on pin 0
         dut.gpio_in.poke(0x00.U)
@@ -434,20 +461,21 @@ class GPIOTest extends AnyFunSpec with ChiselSim {
       // Clear interrupt
       dut.io.axi.awaddr.poke(0x28.U)  // INT_STAT
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x01.U)  // Write 1 to clear
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
-        dut.io.axi.bready.poke(false.B)
+      dut.clock.step(1)
+      dut.io.axi.bready.poke(false.B)
         dut.clock.step(1)
         
         // Interrupt should be cleared
@@ -462,19 +490,20 @@ class GPIOTest extends AnyFunSpec with ChiselSim {
       // Configure all 18 pins as outputs
       dut.io.axi.awaddr.poke(0x04.U)
       dut.io.axi.awvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.awvalid.poke(false.B)
       
       dut.io.axi.wdata.poke(0x3FFFF.U)  // 18 bits all set
       dut.io.axi.wstrb.poke(0xF.U)
       dut.io.axi.wvalid.poke(true.B)
-      dut.clock.step(1)
       while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.wvalid.poke(false.B)
       
       dut.io.axi.bready.poke(true.B)
       while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
       dut.io.axi.bready.poke(false.B)
       dut.clock.step(1)
       
@@ -485,20 +514,21 @@ class GPIOTest extends AnyFunSpec with ChiselSim {
         // Set only this pin high
         dut.io.axi.awaddr.poke(0x08.U)
         dut.io.axi.awvalid.poke(true.B)
-        dut.clock.step(1)
-        while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
-        dut.io.axi.awvalid.poke(false.B)
+      while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
+      dut.io.axi.awvalid.poke(false.B)
         
         dut.io.axi.wdata.poke(pin_mask.U)
         dut.io.axi.wstrb.poke(0xF.U)
         dut.io.axi.wvalid.poke(true.B)
-        dut.clock.step(1)
-        while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
-        dut.io.axi.wvalid.poke(false.B)
+      while (!dut.io.axi.wready.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
+      dut.io.axi.wvalid.poke(false.B)
         
         dut.io.axi.bready.poke(true.B)
-        while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
-        dut.io.axi.bready.poke(false.B)
+      while (!dut.io.axi.bvalid.peek().litToBoolean) { dut.clock.step(1) }
+      dut.clock.step(1)
+      dut.io.axi.bready.poke(false.B)
           dut.clock.step(1)
           
           // Verify output

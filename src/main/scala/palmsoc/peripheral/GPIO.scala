@@ -183,6 +183,7 @@ class GPIO_AXI(config: AXI4LiteConfig = AXI4LiteConfig(32, 32), numPins: Int = 1
           is(GPIORegs.INT_STAT) {
             // Write 1 to clear
             int_stat_reg := int_stat_reg & ~masked_data
+            printf(p"GPIO: Clearing INT_STAT. Old=${int_stat_reg}, MaskedData=${masked_data}, New=${int_stat_reg & ~masked_data}\n")
           }
         }
         

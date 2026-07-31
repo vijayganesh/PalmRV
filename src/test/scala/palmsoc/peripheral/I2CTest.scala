@@ -14,11 +14,9 @@ class I2CTest extends AnyFunSpec with ChiselSim {
   def axiWrite(dut: I2C_AXI, addr: BigInt, data: BigInt): Unit = {
     dut.io.axi.awaddr.poke(addr.U)
     dut.io.axi.awvalid.poke(true.B)
-    while (!dut.io.axi.awready.peek().litToBoolean) {
+      while (!dut.io.axi.awready.peek().litToBoolean) { dut.clock.step(1) }
       dut.clock.step(1)
-    }
-    dut.clock.step(1)
-    dut.io.axi.awvalid.poke(false.B)
+      dut.io.axi.awvalid.poke(false.B)
     
     dut.io.axi.wdata.poke(data.U)
     dut.io.axi.wstrb.poke(0xF.U)
