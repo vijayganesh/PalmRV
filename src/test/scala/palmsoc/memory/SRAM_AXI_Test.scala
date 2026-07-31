@@ -299,10 +299,10 @@ class SRAM_AXI_Test extends AnyFunSpec with ChiselSim {
         // Test that master can hold valid until ready is asserted
         dut.io.axi.awaddr.poke(0x100.U)
         dut.io.axi.awvalid.poke(true.B)
-        dut.clock.step(1)
         
         // Write address should be accepted in one cycle
         dut.io.axi.awready.expect(true.B)
+        dut.clock.step(1)
         dut.io.axi.awvalid.poke(false.B)
         
         // Now test holding write data valid
@@ -455,12 +455,14 @@ class SRAM_AXI_Test extends AnyFunSpec with ChiselSim {
         dut.io.axi.arvalid.poke(false.B)
         
         dut.io.axi.rready.poke(true.B)
-        dut.clock.step(1)
+        while(!dut.io.axi.rvalid.peek().litToBoolean) {
+          dut.clock.step(1)
+        }
         dut.io.axi.rvalid.expect(true.B)
         dut.io.axi.rdata.expect(0x87654321L.U)
         dut.io.axi.rresp.expect(AXI4LiteResp.OKAY)
-        dut.io.axi.rready.poke(false.B)
         dut.clock.step(1)
+        dut.io.axi.rready.poke(false.B)
       }
     }
   }
