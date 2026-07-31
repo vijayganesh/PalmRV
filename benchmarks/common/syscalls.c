@@ -15,7 +15,6 @@
 
 void uart_init() {
     // Set a very small divisor for simulation speed
-    // divisor = 2 means baud_tick every 32 cycles. 1 char = ~320 cycles.
     UART_DIVISOR = 2;
     // Enable TX and RX
     UART_CTRL = 0x03;
@@ -66,6 +65,15 @@ int _kill(int pid, int sig) {
 
 int _getpid(void) {
     return 1;
+}
+
+#include <time.h>
+
+time_t time(time_t *t) {
+    uint32_t cycles;
+    asm volatile ("csrr %0, mcycle" : "=r"(cycles));
+    if (t) *t = cycles;
+    return cycles;
 }
 
 extern char _end;
