@@ -280,7 +280,7 @@ object BootROM {
         if (trimmed.isEmpty || trimmed.startsWith("#") || trimmed.startsWith("//")) {
           0.U(32.W)
         } else {
-          ("0x" + trimmed).U(32.W)
+          ("h" + trimmed).U(32.W)
         }
       }.toSeq
     } finally {

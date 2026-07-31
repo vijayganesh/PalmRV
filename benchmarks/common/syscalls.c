@@ -14,6 +14,9 @@
 #define UART_TX_EMPTY (1 << 1)
 
 void uart_init() {
+    // Set a very small divisor for simulation speed
+    // divisor = 2 means baud_tick every 32 cycles. 1 char = ~320 cycles.
+    UART_DIVISOR = 2;
     // Enable TX and RX
     UART_CTRL = 0x03;
 }
