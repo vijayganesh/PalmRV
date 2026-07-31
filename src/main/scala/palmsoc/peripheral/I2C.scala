@@ -214,7 +214,7 @@ class I2CCore extends Module {
             scl_drive_high := false.B
             when(r_bit_cnt < 8.U) {
               // Shift out MSB first
-              sda_drive_high := r_data_buf(7.U - r_bit_cnt)
+              sda_drive_high := r_data_buf((7.U - r_bit_cnt)(2, 0))
             }.otherwise {
               sda_drive_high := true.B // Release SDA to read ACK from slave
             }

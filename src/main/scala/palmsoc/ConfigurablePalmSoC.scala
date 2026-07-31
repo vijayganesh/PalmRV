@@ -99,6 +99,33 @@ class ConfigurablePalmSoC(
     flat.rready     := nested.r.rready
   }
 
+  // Helper to connect flat AXI4LiteIO master to nested AXI4LiteMasterInterface crossbar port
+  private def connectAxiMaster(flat: palmsoc.bus.AXI4LiteIO, nested: palmsoc.config.AXI4LiteMasterInterface): Unit = {
+    nested.aw.awaddr  := flat.awaddr
+    nested.aw.awprot  := flat.awprot
+    nested.aw.awvalid := flat.awvalid
+    flat.awready      := nested.aw.awready
+    
+    nested.w.wdata    := flat.wdata
+    nested.w.wstrb    := flat.wstrb
+    nested.w.wvalid   := flat.wvalid
+    flat.wready       := nested.w.wready
+    
+    flat.bresp        := nested.b.bresp
+    flat.bvalid       := nested.b.bvalid
+    nested.b.bready   := flat.bready
+    
+    nested.ar.araddr  := flat.araddr
+    nested.ar.arprot  := flat.arprot
+    nested.ar.arvalid := flat.arvalid
+    flat.arready      := nested.ar.arready
+    
+    flat.rdata        := nested.r.rdata
+    flat.rresp        := nested.r.rresp
+    flat.rvalid       := nested.r.rvalid
+    nested.r.rready   := flat.rready
+  }
+
   // Helper to tie off unused/disabled slave ports safely (returns DECERR response and prevents hangs)
   private def tieOffSlave(nested: palmsoc.config.AXI4LiteMasterInterface): Unit = {
     nested.aw.awready := true.B
@@ -221,7 +248,7 @@ class ConfigurablePalmSoC(
   // CPU Master
   val cpuAxi = mainXbar.io.masters(0)
   // DMA Master
-  mainXbar.io.masters(1) <> dma.io.axi_master
+  connectAxiMaster(dma.io.axi_master, mainXbar.io.masters(1))
   
   val sBridgeIdle :: sBridgeImemRead :: sBridgeImemWait :: sBridgeDmemWriteAddr :: sBridgeDmemWriteData :: sBridgeDmemWriteResp :: sBridgeDmemReadAddr :: sBridgeDmemReadData :: Nil = Enum(8)
   val bridgeState = RegInit(sBridgeIdle)

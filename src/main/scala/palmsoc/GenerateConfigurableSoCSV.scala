@@ -53,10 +53,13 @@ object GenerateConfigurableSoCSV {
     val targetPath = Paths.get(cfg.targetDir)
     Files.createDirectories(targetPath)
 
+    val coreConfig = palmsoc.config.SoCConfig(enableMExtension = true, enableBExtension = true)
+    
     val socConfig = ConfigurablePalmSoCConfig(
       hasGPIO = cfg.gpio,
       hasUART = cfg.uart,
-      hasI2C = cfg.i2c
+      hasI2C = cfg.i2c,
+      coreConfig = coreConfig
     )
 
     println(s"Compiling ConfigurablePalmSoC with options:")

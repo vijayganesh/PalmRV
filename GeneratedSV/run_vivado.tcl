@@ -27,8 +27,8 @@ foreach mod_info $modules {
   # Read XDC constraints
   read_xdc GeneratedSV/constraints.xdc
   
-  # Synthesize Design (Out Of Context to allow high I/O pin counts)
-  if {[catch {synth_design -top $top_name -part $part_name -mode out_of_context} err]} {
+  # Synthesize Design
+  if {[catch {synth_design -top $top_name -part $part_name} err]} {
     puts "ERROR during synthesis of $top_name: $err"
     continue
   }
@@ -53,6 +53,11 @@ foreach mod_info $modules {
   
   # Write checkpoint
   write_checkpoint -force "${output_dir}/${top_name}_routed.dcp"
+  
+  # Generate Bitstream
+  if {[catch {write_bitstream -force "${output_dir}/${top_name}.bit"} err]} {
+    puts "ERROR during write_bitstream of $top_name: $err"
+  }
   
   # Generate reports
   report_utilization -file "${output_dir}/${top_name}_utilization.rpt"

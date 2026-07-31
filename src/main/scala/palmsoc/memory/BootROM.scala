@@ -76,7 +76,7 @@ class BootROM(
     }
   }.otherwise {
     // Busy - process read operation
-    readData := rom(opAddr)
+    readData := rom(opAddr(log2Ceil(depth)-1, 0))
     
     // Acknowledge and return to idle
     io.wb.ack := true.B
@@ -207,8 +207,8 @@ when(state =/= RegNext(state)) {
         printf(p"[BootROM_AXI] Read error at address 0x${Hexadecimal(readAddr)}\n")
       }.otherwise {
         // Read from ROM
-        readData := rom(readAddrIndex)
-        io.axi.rdata := rom(readAddrIndex)
+        readData := rom(readAddrIndex(log2Ceil(depth)-1, 0))
+        io.axi.rdata := rom(readAddrIndex(log2Ceil(depth)-1, 0))
         io.axi.rresp := AXI4LiteResp.OKAY
       }
       
