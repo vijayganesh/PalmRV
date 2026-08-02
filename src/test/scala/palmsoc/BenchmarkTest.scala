@@ -54,11 +54,16 @@ class BenchmarkTest extends AnyFunSpec with ChiselSim {
       
       simulate(new ConfigurablePalmSoC(socConfig, Some(initContent))) { dut =>
         var cycles = 0
+        var retired = 0L
         while (cycles < 1500000) {
-          dut.clock.step(1000)
-          cycles += 1000
+          if (dut.io.instret.peek().litToBoolean) {
+            retired += 1
+          }
+          dut.clock.step(1)
+          cycles += 1
         }
-        println(s"Simulated $cycles cycles.")
+        val ipc = retired.toDouble / cycles.toDouble
+        println(s"Simulated $cycles cycles. Instructions retired: $retired. IPC: $ipc")
       }
     }
   }

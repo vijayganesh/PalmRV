@@ -123,7 +123,7 @@ class GPIO_AXI(config: AXI4LiteConfig = AXI4LiteConfig(32, 32), numPins: Int = 1
   // State machine
   switch(state) {
     is(sIdle) {
-        printf(p" Inside the Sidle only\n")
+        //printf(p" Inside the Sidle only\n")
         io.axi.awready := true.B
   io.axi.arready := true.B
       when(io.axi.awvalid && io.axi.awready) {
@@ -137,10 +137,10 @@ class GPIO_AXI(config: AXI4LiteConfig = AXI4LiteConfig(32, 32), numPins: Int = 1
     
     is(sWriteData) {
         io.axi.wready := true.B
-      printf(p"GPIO: In sWriteData, wvalid=${io.axi.wvalid}\n")
+      //printf(p"GPIO: In sWriteData, wvalid=${io.axi.wvalid}\n")
       when(io.axi.wvalid && io.axi.wready) {
         //io.axi.wready := true.B
-        printf(p"GPIO: sWriteData processing - wdata=0x${Hexadecimal(io.axi.wdata)}, wstrb=0x${Hexadecimal(io.axi.wstrb)}\n")
+        //printf(p"GPIO: sWriteData processing - wdata=0x${Hexadecimal(io.axi.wdata)}, wstrb=0x${Hexadecimal(io.axi.wstrb)}\n")
         // Decode register address
         reg_addr := writeAddr(7, 0)
         
@@ -183,28 +183,28 @@ class GPIO_AXI(config: AXI4LiteConfig = AXI4LiteConfig(32, 32), numPins: Int = 1
           is(GPIORegs.INT_STAT) {
             // Write 1 to clear
             int_stat_reg := int_stat_reg & ~masked_data
-            printf(p"GPIO: Clearing INT_STAT. Old=${int_stat_reg}, MaskedData=${masked_data}, New=${int_stat_reg & ~masked_data}\n")
+            //printf(p"GPIO: Clearing INT_STAT. Old=${int_stat_reg}, MaskedData=${masked_data}, New=${int_stat_reg & ~masked_data}\n")
           }
         }
         
-        printf(p"GPIO: sWriteData -> sWriteResp\n")
+        //printf(p"GPIO: sWriteData -> sWriteResp\n")
         state := sWriteResp
       }
     }
     
     is(sWriteResp) {
-      printf(p"GPIO: In sWriteResp,  bReady =${io.axi.bready}\n")
+      //printf(p"GPIO: In sWriteResp,  bReady =${io.axi.bready}\n")
       io.axi.bvalid := true.B
       io.axi.bresp := AXI4LiteResp.OKAY
       
       when(io.axi.bvalid && io.axi.bready) {
-        printf(p"GPIO: sWriteResp -> sIdle\n")
+        //printf(p"GPIO: sWriteResp -> sIdle\n")
         state := sIdle
       }
     }
     
     is(sReadData) {
-      printf(p"GPIO: In sReadData\n")
+      //printf(p"GPIO: In sReadData\n")
       reg_addr := readAddr(7, 0)
       
       // Register reads
@@ -242,16 +242,16 @@ class GPIO_AXI(config: AXI4LiteConfig = AXI4LiteConfig(32, 32), numPins: Int = 1
       io.axi.rvalid := true.B
       
       when(io.axi.rready) {
-        printf(p"GPIO: sReadData -> sIdle\n")
+        //printf(p"GPIO: sReadData -> sIdle\n")
         state := sIdle
       }
     }
   }
-  printf(p"State: $state, WriteAddr: $writeAddr, ReadAddr: $readAddr, OutputReg: $output_reg, DirectionReg: $direction_reg\n")
-  printf(p"InputReg: $input_reg, IntEnReg: $int_en_reg, IntTypeReg: $int_type_reg, IntPolReg: $int_pol_reg, IntStatReg: $int_stat_reg\n")
+  //printf(p"State: $state, WriteAddr: $writeAddr, ReadAddr: $readAddr, OutputReg: $output_reg, DirectionReg: $direction_reg\n")
+  //printf(p"InputReg: $input_reg, IntEnReg: $int_en_reg, IntTypeReg: $int_type_reg, IntPolReg: $int_pol_reg, IntStatReg: $int_stat_reg\n")
   // print the AXI bus signals
-  printf(p"")
-printf(p"AXI: awvalid=${io.axi.awvalid} awready=${io.axi.awready} wvalid=${io.axi.wvalid} wready=${io.axi.wready} bvalid=${io.axi.bvalid} bready=${io.axi.bready} arvalid=${io.axi.arvalid} arready=${io.axi.arready} rvalid=${io.axi.rvalid} rready=${io.axi.rready}\n")
+  //printf(p"")
+//printf(p"AXI: awvalid=${io.axi.awvalid} awready=${io.axi.awready} wvalid=${io.axi.wvalid} wready=${io.axi.wready} bvalid=${io.axi.bvalid} bready=${io.axi.bready} arvalid=${io.axi.arvalid} arready=${io.axi.arready} rvalid=${io.axi.rvalid} rready=${io.axi.rready}\n")
 }
 
 /**

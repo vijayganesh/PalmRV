@@ -32,6 +32,9 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
     
     // Interrupt interface
     val external_interrupt = Input(Bool())
+    
+    // Debug interface
+    val instret = Output(Bool())
   })
   
   // Pipeline stages
@@ -176,6 +179,7 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
   
   csr.io.mret := memory.io.mret_out
   csr.io.instret := writeback.io.rf_wen
+  io.instret := writeback.io.rf_wen
   
   // Data memory interface
   io.dmem_addr := memory.io.dmem_addr

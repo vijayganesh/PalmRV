@@ -33,6 +33,7 @@ class ConfigurablePalmSoC(
     // Debug and monitoring outputs
     val pc = Output(UInt(32.W))
     val instruction = Output(UInt(32.W))
+    val instret = Output(Bool())
     
     // GPIO interface
     val gpio_out = Output(UInt(18.W))
@@ -144,6 +145,7 @@ class ConfigurablePalmSoC(
   val core = Module(new RV32Core(socConfig.coreConfig))
   io.pc := core.io.imem_addr
   io.instruction := core.io.imem_data
+  io.instret := core.io.instret
   
   // 2. Instantiate crossbar interconnects
   val mainXbar = Module(new PalmVMainInterconnect)

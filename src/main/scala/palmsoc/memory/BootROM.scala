@@ -156,7 +156,7 @@ class BootROM_AXI(
   val arInBounds = arAddrIndex < depth.U
 // Debug: print current state
 when(state =/= RegNext(state)) {
-    printf(p"[BootROM_AXI] State transition: ${RegNext(state)} -> ${state}\n")
+    //printf(p"[BootROM_AXI] State transition: ${RegNext(state)} -> ${state}\n")
 }
   // Memory access signals
   val do_read = WireDefault(false.B)
@@ -179,7 +179,7 @@ when(state =/= RegNext(state)) {
         read_addr_wire := io.axi.araddr
         do_read := true.B
         state := sReadData
-        printf(p"[BootROM_AXI] Accepting read address: 0x${Hexadecimal(io.axi.araddr)}, arready = ${io.axi.arready}, transitioning to sReadData\n")
+        //printf(p"[BootROM_AXI] Accepting read address: 0x${Hexadecimal(io.axi.araddr)}, arready = ${io.axi.arready}, transitioning to sReadData\n")
       }
     }
     
@@ -219,7 +219,7 @@ when(state =/= RegNext(state)) {
         // Address error - out of bounds or misaligned
         io.axi.rdata := 0.U
         io.axi.rresp := AXI4LiteResp.SLVERR
-        printf(p"[BootROM_AXI] Read error at address 0x${Hexadecimal(readAddr)}\n")
+        //printf(p"[BootROM_AXI] Read error at address 0x${Hexadecimal(readAddr)}\n")
       }.otherwise {
         // Read from ROM synchronously
         io.axi.rdata := Mux(is_rom_out_valid, rom_out, readData)
@@ -227,11 +227,11 @@ when(state =/= RegNext(state)) {
       }
       
       io.axi.rvalid := true.B
-      printf(p"[BootROM_AXI] Read data: 0x${Hexadecimal(io.axi.rdata)}," +
-        p" rvalid = ${io.axi.rvalid}, rresp = ${io.axi.rresp}, " +
-        p"readAddr = 0x${Hexadecimal(readAddr)}, aligned = ${readAddrAligned}, " +
-        p"inBounds = ${readInBounds} arready=${io.axi.arready}" +
-        p"\n" )
+      //printf(p"[BootROM_AXI] Read data: 0x${Hexadecimal(io.axi.rdata)}," +
+      //  p" rvalid = ${io.axi.rvalid}, rresp = ${io.axi.rresp}, " +
+      //  p"readAddr = 0x${Hexadecimal(readAddr)}, aligned = ${readAddrAligned}, " +
+      //  p"inBounds = ${readInBounds} arready=${io.axi.arready}" +
+      //  p"\n" )
       
       when(io.axi.rready) {
         // Data accepted, return to idle

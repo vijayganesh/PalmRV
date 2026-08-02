@@ -190,7 +190,7 @@ class CSRFile extends Module {
   
   // Machine Counters
   val mcycle = RegInit(0.U(64.W))
-  val minstret = RegInit(0.U(64.W))
+  val minstret = dontTouch(RegInit(0.U(64.W)))
   
   // Update counters
   mcycle := mcycle + 1.U
