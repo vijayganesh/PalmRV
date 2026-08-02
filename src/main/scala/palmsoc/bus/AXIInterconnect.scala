@@ -495,34 +495,65 @@ class AXI4LiteRegisterSlice(addrWidth: Int = 32, dataWidth: Int = 32) extends Mo
     val out = new AXI4LiteMasterInterface(addrWidth, dataWidth)
   })
   
-  // Write address channel
-  io.out.aw.awaddr := RegNext(io.in.aw.awaddr)
-  io.out.aw.awprot := RegNext(io.in.aw.awprot)
-  io.out.aw.awvalid := RegNext(io.in.aw.awvalid, false.B)
-  io.in.aw.awready := RegNext(io.out.aw.awready, false.B)
+  import chisel3.util._
   
-  // Write data channel
-  io.out.w.wdata := RegNext(io.in.w.wdata)
-  io.out.w.wstrb := RegNext(io.in.w.wstrb)
-  io.out.w.wvalid := RegNext(io.in.w.wvalid, false.B)
-  io.in.w.wready := RegNext(io.out.w.wready, false.B)
+  // Helper to pipeline an AXI channel using a 2-element Queue (Skid Buffer)
+  def pipelineChannel[T <: Data](
+    vIn: Bool, rIn: Bool, pIn: T,
+    vOut: Bool, rOut: Bool, pOut: T
+  ): Unit = {
+    val q = Module(new Queue(chiselTypeOf(pIn), 2))
+    q.io.enq.valid := vIn
+    q.io.enq.bits := pIn
+    rIn := q.io.enq.ready
+    
+    vOut := q.io.deq.valid
+    pOut := q.io.deq.bits
+    q.io.deq.ready := rOut
+  }
   
-  // Write response channel
-  io.in.b.bresp := RegNext(io.out.b.bresp)
-  io.in.b.bvalid := RegNext(io.out.b.bvalid, false.B)
-  io.out.b.bready := RegNext(io.in.b.bready, false.B)
+  // AW Channel
+  val awPayloadIn = Wire(new Bundle { val addr = UInt(addrWidth.W); val prot = UInt(3.W) })
+  awPayloadIn.addr := io.in.aw.awaddr
+  awPayloadIn.prot := io.in.aw.awprot
+  val awPayloadOut = Wire(chiselTypeOf(awPayloadIn))
+  pipelineChannel(io.in.aw.awvalid, io.in.aw.awready, awPayloadIn, io.out.aw.awvalid, io.out.aw.awready, awPayloadOut)
+  io.out.aw.awaddr := awPayloadOut.addr
+  io.out.aw.awprot := awPayloadOut.prot
   
-  // Read address channel
-  io.out.ar.araddr := RegNext(io.in.ar.araddr)
-  io.out.ar.arprot := RegNext(io.in.ar.arprot)
-  io.out.ar.arvalid := RegNext(io.in.ar.arvalid, false.B)
-  io.in.ar.arready := RegNext(io.out.ar.arready, false.B)
+  // W Channel
+  val wPayloadIn = Wire(new Bundle { val data = UInt(dataWidth.W); val strb = UInt((dataWidth/8).W) })
+  wPayloadIn.data := io.in.w.wdata
+  wPayloadIn.strb := io.in.w.wstrb
+  val wPayloadOut = Wire(chiselTypeOf(wPayloadIn))
+  pipelineChannel(io.in.w.wvalid, io.in.w.wready, wPayloadIn, io.out.w.wvalid, io.out.w.wready, wPayloadOut)
+  io.out.w.wdata := wPayloadOut.data
+  io.out.w.wstrb := wPayloadOut.strb
   
-  // Read data channel
-  io.in.r.rdata := RegNext(io.out.r.rdata)
-  io.in.r.rresp := RegNext(io.out.r.rresp)
-  io.in.r.rvalid := RegNext(io.out.r.rvalid, false.B)
-  io.out.r.rready := RegNext(io.in.r.rready, false.B)
+  // B Channel (Reverse Direction)
+  val bPayloadIn = Wire(new Bundle { val resp = UInt(2.W) })
+  bPayloadIn.resp := io.out.b.bresp
+  val bPayloadOut = Wire(chiselTypeOf(bPayloadIn))
+  pipelineChannel(io.out.b.bvalid, io.out.b.bready, bPayloadIn, io.in.b.bvalid, io.in.b.bready, bPayloadOut)
+  io.in.b.bresp := bPayloadOut.resp
+  
+  // AR Channel
+  val arPayloadIn = Wire(new Bundle { val addr = UInt(addrWidth.W); val prot = UInt(3.W) })
+  arPayloadIn.addr := io.in.ar.araddr
+  arPayloadIn.prot := io.in.ar.arprot
+  val arPayloadOut = Wire(chiselTypeOf(arPayloadIn))
+  pipelineChannel(io.in.ar.arvalid, io.in.ar.arready, arPayloadIn, io.out.ar.arvalid, io.out.ar.arready, arPayloadOut)
+  io.out.ar.araddr := arPayloadOut.addr
+  io.out.ar.arprot := arPayloadOut.prot
+  
+  // R Channel (Reverse Direction)
+  val rPayloadIn = Wire(new Bundle { val data = UInt(dataWidth.W); val resp = UInt(2.W) })
+  rPayloadIn.data := io.out.r.rdata
+  rPayloadIn.resp := io.out.r.rresp
+  val rPayloadOut = Wire(chiselTypeOf(rPayloadIn))
+  pipelineChannel(io.out.r.rvalid, io.out.r.rready, rPayloadIn, io.in.r.rvalid, io.in.r.rready, rPayloadOut)
+  io.in.r.rdata := rPayloadOut.data
+  io.in.r.rresp := rPayloadOut.resp
 }
 
 /**

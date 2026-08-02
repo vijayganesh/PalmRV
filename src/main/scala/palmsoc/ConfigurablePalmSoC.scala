@@ -166,7 +166,8 @@ class ConfigurablePalmSoC(
   connectAxi(sram.io.axi, mainXbar.io.slaves(2))
   
   // Slave 3: Peripheral Sub-Crossbar
-  peripheralXbar.io.masters(0) <> mainXbar.io.slaves(3)
+  // Insert register slice to break long combinatorial paths from DMA to Peripherals
+  palmsoc.bus.AXI4LiteInterconnectUtils.insertRegSlice(mainXbar.io.slaves(3), peripheralXbar.io.masters(0))
   
   // Slave 4: Accelerator Sub-Crossbar
   acceleratorXbar.io.masters(0) <> mainXbar.io.slaves(4)
