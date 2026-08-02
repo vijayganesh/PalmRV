@@ -158,9 +158,7 @@ class BootROM_AXI(
 when(state =/= RegNext(state)) {
     //printf(p"[BootROM_AXI] State transition: ${RegNext(state)} -> ${state}\n")
 }
-  // Memory access signals
-  val do_read = WireDefault(false.B)
-  val read_addr_wire = WireDefault(readAddr)
+  // Memory access signals are no longer needed
   
   // State machine
   switch(state) {
@@ -176,10 +174,12 @@ when(state =/= RegNext(state)) {
         // Accept read address
         io.axi.arready := true.B
         readAddr := io.axi.araddr
-        read_addr_wire := io.axi.araddr
-        do_read := true.B
+        
+        // Capture ROM data synchronously to break combinatorial AXI path
+        val arAddrIndex = io.axi.araddr >> log2Ceil(config.bytesPerWord)
+        readData := rom(arAddrIndex)
+        
         state := sReadData
-        //printf(p"[BootROM_AXI] Accepting read address: 0x${Hexadecimal(io.axi.araddr)}, arready = ${io.axi.arready}, transitioning to sReadData\n")
       }
     }
     
@@ -205,33 +205,18 @@ when(state =/= RegNext(state)) {
     }
     
     is(sReadData) {
-      // ROM Read Logic
-      val read_addr_index = read_addr_wire >> log2Ceil(config.bytesPerWord)
-      val rom_out = rom(read_addr_index)
-      
-      val is_rom_out_valid = RegNext(do_read, false.B)
-      when(is_rom_out_valid) {
-        readData := rom_out
-      }
-      
       // Perform read and send data
       when(!readInBounds || !readAddrAligned) {
         // Address error - out of bounds or misaligned
         io.axi.rdata := 0.U
         io.axi.rresp := AXI4LiteResp.SLVERR
-        //printf(p"[BootROM_AXI] Read error at address 0x${Hexadecimal(readAddr)}\n")
       }.otherwise {
-        // Read from ROM synchronously
-        io.axi.rdata := Mux(is_rom_out_valid, rom_out, readData)
+        // Send the synchronously captured data
+        io.axi.rdata := readData
         io.axi.rresp := AXI4LiteResp.OKAY
       }
       
       io.axi.rvalid := true.B
-      //printf(p"[BootROM_AXI] Read data: 0x${Hexadecimal(io.axi.rdata)}," +
-      //  p" rvalid = ${io.axi.rvalid}, rresp = ${io.axi.rresp}, " +
-      //  p"readAddr = 0x${Hexadecimal(readAddr)}, aligned = ${readAddrAligned}, " +
-      //  p"inBounds = ${readInBounds} arready=${io.axi.arready}" +
-      //  p"\n" )
       
       when(io.axi.rready) {
         // Data accepted, return to idle

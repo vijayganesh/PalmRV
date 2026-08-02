@@ -11,9 +11,10 @@ mkdir -p GeneratedSV/reports
 # 2. Run Chisel generation
 echo "Generating SystemVerilog files using sbt..."
 sbt "runMain palmsoc.GenerateConfigurableSoCSV gpio=true uart=true i2c=true targetDir=GeneratedSV outputFile=ConfigurablePalmSoC.sv"
+sbt "runMain palmsoc.GenerateRV32CoreSV"
 
 # 3. Verify files exist
-if [ ! -f "GeneratedSV/ConfigurablePalmSoC.sv" ]; then
+if [ ! -f "GeneratedSV/ConfigurablePalmSoC.sv" ] || [ ! -f "GeneratedSV/RV32Core.sv" ]; then
     echo "ERROR: Generated SV files not found in GeneratedSV/"
     exit 1
 fi

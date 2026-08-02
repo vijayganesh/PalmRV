@@ -226,6 +226,18 @@ class ExecuteStage(val config: palmsoc.config.SoCConfig = palmsoc.config.Default
   val csr_addr_reg = RegInit(0.U(12.W))
   val mret_reg = RegInit(false.B)
   
+  // Datapath registers (only need to stall, no flush needed)
+  when(!io.stall) {
+    alu_result_reg := alu_result
+    mem_write_data_reg := resolved_rs2_data
+    rd_addr_reg := io.rd_addr_in
+    mem_size_reg := io.mem_size_in
+    mem_unsigned_reg := io.mem_unsigned_in
+    wb_sel_reg := io.wb_sel_in
+    pc_plus_4_reg := pc_plus_4
+  }
+
+  // Control registers (must be flushed)
   when(io.flush || m_stall_req) {
     valid_reg := false.B
     reg_write_reg := false.B
@@ -235,17 +247,10 @@ class ExecuteStage(val config: palmsoc.config.SoCConfig = palmsoc.config.Default
     csr_addr_reg := 0.U
     mret_reg := false.B
   }.elsewhen(!io.stall) {
-    alu_result_reg := alu_result
-    mem_write_data_reg := resolved_rs2_data
-    rd_addr_reg := io.rd_addr_in
+    valid_reg := io.valid_in
+    reg_write_reg := io.reg_write_in
     mem_read_reg := io.mem_read_in
     mem_write_reg := io.mem_write_in
-    mem_size_reg := io.mem_size_in
-    mem_unsigned_reg := io.mem_unsigned_in
-    reg_write_reg := io.reg_write_in
-    wb_sel_reg := io.wb_sel_in
-    pc_plus_4_reg := pc_plus_4
-    valid_reg := io.valid_in
     csr_cmd_reg := io.csr_cmd_in
     csr_addr_reg := io.csr_addr_in
     mret_reg := io.mret_in

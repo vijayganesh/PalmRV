@@ -154,15 +154,15 @@ class ConfigurablePalmSoC(
   
   // 3. Connect Main Crossbar Slaves
   
-  // Slave 0: Boot ROM (128 KB / 32K words)
-  val bootrom = Module(new BootROM_AXI(axiConfig, 32768, bootromInit))
+  // Slave 0: Boot ROM (4 KB / 1K words)
+  val bootrom = Module(new BootROM_AXI(axiConfig, 1024, bootromInit))
   connectAxi(bootrom.io.axi, mainXbar.io.slaves(0))
   
   // Slave 1: Flash (Tied off)
   tieOffSlave(mainXbar.io.slaves(1))
   
-  // Slave 2: SRAM (256 KB / 64K words)
-  val sram = Module(new SRAM_AXI(axiConfig, 65536))
+  // Slave 2: SRAM (16 KB / 4K words)
+  val sram = Module(new SRAM_AXI(axiConfig, 4096))
   connectAxi(sram.io.axi, mainXbar.io.slaves(2))
   
   // Slave 3: Peripheral Sub-Crossbar

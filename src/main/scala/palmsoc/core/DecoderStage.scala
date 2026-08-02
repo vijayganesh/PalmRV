@@ -298,6 +298,24 @@ class DecodeStage(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultS
   val csr_addr_reg = RegInit(0.U(12.W))
   val mret_reg = RegInit(false.B)
   
+  // Datapath registers (only need to stall, no flush needed to save timing)
+  when(!io.stall) {
+    pc_reg := io.pc_in
+    rs1_data_reg := io.rs1_data
+    rs2_data_reg := io.rs2_data
+    rs1_addr_reg := rs1
+    rs2_addr_reg := rs2
+    imm_reg := imm_out
+    rd_addr_reg := rd
+    alu_op_reg := alu_op
+    alu_src1_sel_reg := alu_src1_sel
+    alu_src2_sel_reg := alu_src2_sel
+    mem_size_reg := mem_size
+    mem_unsigned_reg := mem_unsigned
+    wb_sel_reg := wb_sel
+  }
+  
+  // Control registers (must be flushed to inject bubbles)
   when(io.flush) {
     valid_reg := false.B
     reg_write_reg := false.B
@@ -309,25 +327,12 @@ class DecodeStage(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultS
     csr_addr_reg := 0.U
     mret_reg := false.B
   }.elsewhen(!io.stall) {
-    pc_reg := io.pc_in
-    rs1_data_reg := io.rs1_data
-    rs2_data_reg := io.rs2_data
-    rs1_addr_reg := rs1
-    rs2_addr_reg := rs2
-    imm_reg := imm_out
-    rd_addr_reg := rd
-    alu_op_reg := alu_op
-    alu_src1_sel_reg := alu_src1_sel
-    alu_src2_sel_reg := alu_src2_sel
-    branch_reg := branch
-    jump_reg := jump
+    valid_reg := io.valid_in
+    reg_write_reg := reg_write
     mem_read_reg := mem_read
     mem_write_reg := mem_write
-    mem_size_reg := mem_size
-    mem_unsigned_reg := mem_unsigned
-    reg_write_reg := reg_write
-    wb_sel_reg := wb_sel
-    valid_reg := io.valid_in
+    branch_reg := branch
+    jump_reg := jump
     csr_cmd_reg := csr_cmd
     csr_addr_reg := csr_addr
     mret_reg := mret

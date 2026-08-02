@@ -8,6 +8,7 @@ file mkdir $output_dir
 # List of modules to process: {top_module_name source_verilog_file}
 set modules {
   {"ConfigurablePalmSoC" "GeneratedSV/ConfigurablePalmSoC.sv"}
+  {"RV32Core" "GeneratedSV/RV32Core.sv"}
 }
 
 foreach mod_info $modules {
