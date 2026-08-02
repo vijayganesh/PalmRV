@@ -286,6 +286,19 @@ class ConfigurablePalmSoC(
   core.io.dmem_rdata := core_dmem_rdata_reg
   core.io.dmem_valid := core_dmem_valid_reg
   
+  val stall_counter = RegInit(0.U(32.W))
+  when(bridgeState =/= sBridgeIdle && bridgeState === RegNext(bridgeState)) {
+    stall_counter := stall_counter + 1.U
+    when(stall_counter === 100.U) {
+      printf("BRIDGE STALL DETECTED: state=%d, imem_addr=%x, dmem_addr=%x, awvalid=%d, wvalid=%d, bvalid=%d, arvalid=%d, rvalid=%d\n",
+        bridgeState.asUInt, imem_addr_reg, dmem_addr_reg,
+        cpuAxi.aw.awvalid, cpuAxi.w.wvalid, cpuAxi.b.bvalid,
+        cpuAxi.ar.arvalid, cpuAxi.r.rvalid)
+    }
+  }.otherwise {
+    stall_counter := 0.U
+  }
+  
   switch(bridgeState) {
     is(sBridgeIdle) {
       // Prioritize data memory accesses over starting a new instruction fetch

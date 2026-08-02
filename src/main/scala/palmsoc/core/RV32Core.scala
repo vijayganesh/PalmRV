@@ -61,7 +61,7 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
   val mem_flush = trap_flush
   
   // Stall logic
-  val mem_wait_stall = (memory.io.mem_read && !memory.io.valid_out) || !io.imem_valid
+  val mem_wait_stall = (memory.io.valid_in && (memory.io.mem_read || memory.io.mem_write) && !io.dmem_valid) || !io.imem_valid
   val if_id_stall = mem_wait_stall || hazard.io.load_use_stall || execute.io.ex_stall
   
   val stall = mem_wait_stall // For backward compatibility in some connections
@@ -92,8 +92,8 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
   hazard.io.id_rs2 := decode.io.rs2_addr
   hazard.io.id_rs1_used := decode.io.rs1_used
   hazard.io.id_rs2_used := decode.io.rs2_used
-  hazard.io.ex_wb_sel := decode.io.wb_sel
-  hazard.io.ex_rd := decode.io.rd_addr
+  hazard.io.ex_wb_sel := execute.io.wb_sel_out
+  hazard.io.ex_rd := execute.io.rd_addr_out
   
   // Register file read
   regfile.io.rs1_addr := decode.io.rs1_addr
