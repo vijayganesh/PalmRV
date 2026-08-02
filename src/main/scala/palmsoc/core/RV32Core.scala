@@ -178,8 +178,8 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
   csr.io.software_interrupt := false.B
   
   csr.io.mret := memory.io.mret_out
-  csr.io.instret := writeback.io.rf_wen
-  io.instret := writeback.io.rf_wen
+  csr.io.instret := memory.io.valid_out
+  io.instret := memory.io.valid_out
   
   // Data memory interface
   io.dmem_addr := memory.io.dmem_addr

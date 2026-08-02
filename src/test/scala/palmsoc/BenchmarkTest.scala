@@ -55,10 +55,25 @@ class BenchmarkTest extends AnyFunSpec with ChiselSim {
       simulate(new ConfigurablePalmSoC(socConfig, Some(initContent))) { dut =>
         var cycles = 0
         var retired = 0L
+        var last_pc = 0L
+        var pc_stall_cycles = 0
         while (cycles < 1500000) {
           if (dut.io.instret.peek().litToBoolean) {
             retired += 1
           }
+          
+          val pc = dut.io.pc.peek().litValue.toLong
+          if (pc == last_pc) {
+            pc_stall_cycles += 1
+          } else {
+            pc_stall_cycles = 0
+            last_pc = pc
+          }
+          
+          if (pc_stall_cycles == 100) {
+            println(s"Core stalled at PC: 0x${pc.toHexString} for 100 cycles!")
+          }
+          
           dut.clock.step(1)
           cycles += 1
         }
