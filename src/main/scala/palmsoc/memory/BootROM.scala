@@ -177,7 +177,8 @@ when(state =/= RegNext(state)) {
         
         // Capture ROM data synchronously to break combinatorial AXI path
         val arAddrIndex = io.axi.araddr >> log2Ceil(config.bytesPerWord)
-        readData := rom(arAddrIndex)
+        val safeIndex = arAddrIndex(log2Ceil(depth) - 1, 0)
+        readData := rom(safeIndex)
         
         state := sReadData
       }
