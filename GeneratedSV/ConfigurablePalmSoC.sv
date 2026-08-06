@@ -1252,12 +1252,13 @@ module HazardDetectionUnit(	// src/main/scala/palmsoc/core/HazardDetectionUnit.s
                io_id_rs2_used,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
   input  [1:0] io_ex_wb_sel,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
   input  [4:0] io_ex_rd,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
+  input        io_ex_valid,	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
   output       io_load_use_stall	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:12:14
 );
 
   assign io_load_use_stall =
-    (io_ex_wb_sel == 2'h1 | (&io_ex_wb_sel)) & (|io_ex_rd)
-    & (io_id_rs1_used & io_id_rs1 == io_ex_rd | io_id_rs2_used & io_id_rs2 == io_ex_rd);	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:11:7, :28:21, :34:{37,45,61}, :36:{23,35,44}, :37:{36,50}, :38:{36,50}, :40:{20,34}
+    io_ex_valid & (io_ex_wb_sel == 2'h1 | (&io_ex_wb_sel)) & (|io_ex_rd)
+    & (io_id_rs1_used & io_id_rs1 == io_ex_rd | io_id_rs2_used & io_id_rs2 == io_ex_rd);	// src/main/scala/palmsoc/core/HazardDetectionUnit.scala:11:7, :29:21, :35:{37,45,61}, :37:{20,38,50,59}, :38:{36,50}, :39:{36,50}, :41:{20,34}
 endmodule
 
 module CSRFile(	// src/main/scala/palmsoc/core/CSRFile.scala:108:7
@@ -1557,18 +1558,18 @@ module RV32Core(	// src/main/scala/palmsoc/core/RV32Core.scala:17:7
   wire        flush = _execute_io_branch_taken | _execute_io_jump_taken | trap_flush;	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :56:46, :57:39, :59:34
   wire        memory_io_stall =
     _execute_io_valid_out & (_execute_io_mem_read_out | _execute_io_mem_write_out)
-    & ~io_dmem_valid | ~io_imem_valid;	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :64:{44,67,91,94,110,113}
+    & ~io_dmem_valid | ~io_imem_valid;	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :65:{44,67,91,94,110,113}
   wire        fetch_io_stall =
-    memory_io_stall | _hazard_io_load_use_stall | _execute_io_ex_stall;	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :50:22, :64:110, :65:{36,64}
+    memory_io_stall | _hazard_io_load_use_stall | _execute_io_ex_stall;	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :50:22, :65:110, :66:{36,64}
   FetchStage fetch (	// src/main/scala/palmsoc/core/RV32Core.scala:41:21
     .clock           (clock),
     .reset           (reset),
     .io_pc_next
       (_csr_io_taking_trap
          ? _csr_io_trap_vector
-         : _memory_io_mret_out ? _csr_io_epc : _execute_io_target_pc),	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :44:22, :53:19, :71:26, :72:28
+         : _memory_io_mret_out ? _csr_io_epc : _execute_io_target_pc),	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :44:22, :53:19, :72:26, :73:28
     .io_pc_sel       (flush),	// src/main/scala/palmsoc/core/RV32Core.scala:56:46, :59:34
-    .io_stall        (fetch_io_stall),	// src/main/scala/palmsoc/core/RV32Core.scala:65:{36,64}
+    .io_stall        (fetch_io_stall),	// src/main/scala/palmsoc/core/RV32Core.scala:66:{36,64}
     .io_flush        (flush),	// src/main/scala/palmsoc/core/RV32Core.scala:56:46, :59:34
     .io_imem_addr    (io_imem_addr),
     .io_imem_data    (io_imem_data),
@@ -1612,8 +1613,8 @@ module RV32Core(	// src/main/scala/palmsoc/core/RV32Core.scala:17:7
     .io_mret         (_decode_io_mret),
     .io_rs1_used     (_decode_io_rs1_used),
     .io_rs2_used     (_decode_io_rs2_used),
-    .io_stall        (fetch_io_stall),	// src/main/scala/palmsoc/core/RV32Core.scala:65:{36,64}
-    .io_flush        (flush)	// src/main/scala/palmsoc/core/RV32Core.scala:56:46, :59:34
+    .io_stall        (fetch_io_stall),	// src/main/scala/palmsoc/core/RV32Core.scala:66:{36,64}
+    .io_flush        (flush | _hazard_io_load_use_stall)	// src/main/scala/palmsoc/core/RV32Core.scala:50:22, :56:46, :59:34, :60:48
   );	// src/main/scala/palmsoc/core/RV32Core.scala:42:22
   ExecuteStage execute (	// src/main/scala/palmsoc/core/RV32Core.scala:43:23
     .clock               (clock),
@@ -1660,8 +1661,8 @@ module RV32Core(	// src/main/scala/palmsoc/core/RV32Core.scala:17:7
     .io_csr_cmd_out      (_execute_io_csr_cmd_out),
     .io_csr_addr_out     (_execute_io_csr_addr_out),
     .io_mret_out         (_execute_io_mret_out),
-    .io_stall            (memory_io_stall),	// src/main/scala/palmsoc/core/RV32Core.scala:64:110
-    .io_flush            (trap_flush | _hazard_io_load_use_stall),	// src/main/scala/palmsoc/core/RV32Core.scala:50:22, :57:39, :60:29
+    .io_stall            (memory_io_stall),	// src/main/scala/palmsoc/core/RV32Core.scala:65:110
+    .io_flush            (trap_flush),	// src/main/scala/palmsoc/core/RV32Core.scala:57:39
     .io_ex_stall         (_execute_io_ex_stall)
   );	// src/main/scala/palmsoc/core/RV32Core.scala:43:23
   MemoryStage memory (	// src/main/scala/palmsoc/core/RV32Core.scala:44:22
@@ -1693,7 +1694,7 @@ module RV32Core(	// src/main/scala/palmsoc/core/RV32Core.scala:17:7
     .io_valid_out        (_memory_io_valid_out),
     .io_forward_data_out (_memory_io_forward_data_out),
     .io_mret_out         (_memory_io_mret_out),
-    .io_stall            (memory_io_stall),	// src/main/scala/palmsoc/core/RV32Core.scala:64:110
+    .io_stall            (memory_io_stall),	// src/main/scala/palmsoc/core/RV32Core.scala:65:110
     .io_flush            (trap_flush)	// src/main/scala/palmsoc/core/RV32Core.scala:57:39
   );	// src/main/scala/palmsoc/core/RV32Core.scala:44:22
   WritebackStage writeback (	// src/main/scala/palmsoc/core/RV32Core.scala:45:25
@@ -1732,16 +1733,17 @@ module RV32Core(	// src/main/scala/palmsoc/core/RV32Core.scala:17:7
     .io_id_rs2_used    (_decode_io_rs2_used),	// src/main/scala/palmsoc/core/RV32Core.scala:42:22
     .io_ex_wb_sel      (_decode_io_wb_sel),	// src/main/scala/palmsoc/core/RV32Core.scala:42:22
     .io_ex_rd          (_decode_io_rd_addr),	// src/main/scala/palmsoc/core/RV32Core.scala:42:22
+    .io_ex_valid       (_decode_io_valid_out),	// src/main/scala/palmsoc/core/RV32Core.scala:42:22
     .io_load_use_stall (_hazard_io_load_use_stall)
   );	// src/main/scala/palmsoc/core/RV32Core.scala:50:22
   CSRFile csr (	// src/main/scala/palmsoc/core/RV32Core.scala:53:19
     .clock                 (clock),
     .reset                 (reset),
     .io_csr_addr           (_execute_io_csr_addr_out),	// src/main/scala/palmsoc/core/RV32Core.scala:43:23
-    .io_csr_cmd            (_execute_io_valid_out ? _execute_io_csr_cmd_out : 3'h0),	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :165:24
+    .io_csr_cmd            (_execute_io_valid_out ? _execute_io_csr_cmd_out : 3'h0),	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :167:24
     .io_csr_wdata          (_execute_io_alu_result),	// src/main/scala/palmsoc/core/RV32Core.scala:43:23
     .io_csr_rdata          (_csr_io_csr_rdata),
-    .io_exception_pc       (_execute_io_pc_plus_4 - 32'h4),	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :171:49
+    .io_exception_pc       (_execute_io_pc_plus_4 - 32'h4),	// src/main/scala/palmsoc/core/RV32Core.scala:43:23, :173:49
     .io_mret               (_memory_io_mret_out),	// src/main/scala/palmsoc/core/RV32Core.scala:44:22
     .io_trap_vector        (_csr_io_trap_vector),
     .io_epc                (_csr_io_epc),

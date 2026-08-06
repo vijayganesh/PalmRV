@@ -59,6 +59,7 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
   val if_id_flush = branch_flush || trap_flush
   val id_ex_flush = branch_flush || trap_flush || hazard.io.load_use_stall
   val ex_flush = trap_flush
+  val mem_flush = trap_flush
   
   // Stall logic
   val mem_wait_stall = (memory.io.valid_in && (memory.io.mem_read || memory.io.mem_write) && !io.dmem_valid) || !io.imem_valid
