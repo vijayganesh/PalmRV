@@ -39,7 +39,7 @@ object MemoryMap {
   val RESERVED_BASE   = 0x80000000L
   
   // Region Sizes
-  val BOOTROM_SIZE    = 0x00010000L  // 64 KB
+  val BOOTROM_SIZE    = 0x00020000L  // 128 KB
   val FLASH_SIZE      = 0x10000000L  // 256 MB
   val SRAM_SIZE       = 0x10000000L  // 256 MB
   val PERIPHERAL_SIZE = 0x10000000L  // 256 MB

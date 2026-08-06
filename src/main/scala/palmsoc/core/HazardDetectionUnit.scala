@@ -19,7 +19,8 @@ class HazardDetectionUnit extends Module {
     // Inputs from Execute stage
     val ex_wb_sel = Input(UInt(2.W))
     val ex_rd = Input(UInt(5.W))
-    
+    val ex_valid = Input(Bool())
+
     // Output control signals
     val load_use_stall = Output(Bool())
   })
@@ -29,11 +30,11 @@ class HazardDetectionUnit extends Module {
   
   // Load/CSR-Use Hazard Detection:
   // If the instruction in EX is a load (wb_sel = 1) or CSR read (wb_sel = 3),
-  // and its destination register matches either source register of the instruction in ID, 
-  // we must stall 1 cycle.
+  // and it is a valid instruction, and its destination register matches
+  // either source register of the instruction in ID, we must stall 1 cycle.
   val is_load_or_csr = io.ex_wb_sel === 1.U || io.ex_wb_sel === 3.U
-  
-  when(is_load_or_csr && io.ex_rd =/= 0.U) {
+
+  when(io.ex_valid && is_load_or_csr && io.ex_rd =/= 0.U) {
     val rs1_match = io.id_rs1_used && (io.id_rs1 === io.ex_rd)
     val rs2_match = io.id_rs2_used && (io.id_rs2 === io.ex_rd)
     

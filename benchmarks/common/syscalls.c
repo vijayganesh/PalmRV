@@ -14,8 +14,9 @@
 #define UART_TX_EMPTY (1 << 1)
 
 void uart_init() {
-    // Set a very small divisor for simulation speed
-    UART_DIVISOR = 2;
+    // set Divisor = 2 for simulation
+    // Set divisor for 115200 baud at 100MHz clock: 100,000,000 / (16 * 115200) = 54
+    UART_DIVISOR = 54;
     // Enable TX and RX
     UART_CTRL = 0x03;
 }

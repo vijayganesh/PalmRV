@@ -22,6 +22,7 @@ class ExecuteStage(val config: palmsoc.config.SoCConfig = palmsoc.config.Default
     val alu_src2_sel = Input(Bool())
     val branch = Input(Bool())
     val jump = Input(Bool())
+    val funct3_in = Input(UInt(3.W))
     val mem_read_in = Input(Bool())
     val mem_write_in = Input(Bool())
     val mem_size_in = Input(UInt(2.W))
@@ -190,14 +191,15 @@ class ExecuteStage(val config: palmsoc.config.SoCConfig = palmsoc.config.Default
     val eq = alu_src1 === alu_src2
     val lt = slt_val
     val ltu = sltu_val
-    
-    val is_sub_op = io.alu_op === ALUOp.SUB
-    val is_slt_op = io.alu_op === ALUOp.SLT
-    
-    val slt_zero = !lt && (adder_out(31, 1) === 0.U)
-    val sltu_zero = !ltu && (adder_out(31, 1) === 0.U)
-    
-    branch_taken := Mux(is_sub_op, eq, Mux(is_slt_op, slt_zero, sltu_zero))
+
+    branch_taken := MuxLookup(io.funct3_in, false.B)(Seq(
+      RV32Instructions.FUNCT3_BEQ -> eq,
+      RV32Instructions.FUNCT3_BNE -> !eq,
+      RV32Instructions.FUNCT3_BLT -> lt,
+      RV32Instructions.FUNCT3_BGE -> !lt,
+      RV32Instructions.FUNCT3_BLTU -> ltu,
+      RV32Instructions.FUNCT3_BGEU -> !ltu
+    ))
   }
   
   // Jump/Branch target

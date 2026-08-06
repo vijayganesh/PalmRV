@@ -41,6 +41,7 @@ class DecodeStage(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultS
     val reg_write = Output(Bool())
     val wb_sel = Output(UInt(2.W))  // 0: alu, 1: mem, 2: pc+4, 3: csr
     val valid_out = Output(Bool())
+    val funct3_out = Output(UInt(3.W))
     
     // CSR outputs
     val csr_cmd = Output(UInt(3.W))
@@ -292,6 +293,7 @@ class DecodeStage(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultS
   val reg_write_reg = RegInit(false.B)
   val wb_sel_reg = RegInit(0.U(2.W))
   val valid_reg = RegInit(false.B)
+  val funct3_reg = RegInit(0.U(3.W))
   
   // CSR pipeline registers
   val csr_cmd_reg = RegInit(0.U(3.W))
@@ -313,6 +315,7 @@ class DecodeStage(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultS
     mem_size_reg := mem_size
     mem_unsigned_reg := mem_unsigned
     wb_sel_reg := wb_sel
+    funct3_reg := funct3
   }
   
   // Control registers (must be flushed to inject bubbles)
@@ -360,6 +363,7 @@ class DecodeStage(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultS
   io.reg_write := reg_write_reg
   io.wb_sel := wb_sel_reg
   io.valid_out := valid_reg
+  io.funct3_out := funct3_reg
   io.rs1_used := rs1_used
   io.rs2_used := rs2_used
   io.csr_cmd := csr_cmd_reg

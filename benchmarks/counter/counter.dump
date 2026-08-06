@@ -1,0 +1,178 @@
+
+counter.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	20004117          	auipc	sp,0x20004
+   4:	00010113          	mv	sp,sp
+   8:	20000197          	auipc	gp,0x20000
+   c:	7f818193          	add	gp,gp,2040 # 20000800 <__global_pointer$>
+  10:	22c00513          	li	a0,556
+  14:	20000597          	auipc	a1,0x20000
+  18:	fec58593          	add	a1,a1,-20 # 20000000 <heap_end>
+  1c:	20000617          	auipc	a2,0x20000
+  20:	fe460613          	add	a2,a2,-28 # 20000000 <heap_end>
+  24:	00c5fc63          	bgeu	a1,a2,3c <_start+0x3c>
+  28:	00052283          	lw	t0,0(a0)
+  2c:	0055a023          	sw	t0,0(a1)
+  30:	00450513          	add	a0,a0,4
+  34:	00458593          	add	a1,a1,4
+  38:	fec5e8e3          	bltu	a1,a2,28 <_start+0x28>
+  3c:	20000517          	auipc	a0,0x20000
+  40:	fc450513          	add	a0,a0,-60 # 20000000 <heap_end>
+  44:	80418593          	add	a1,gp,-2044 # 20000004 <_ebss>
+  48:	00b57863          	bgeu	a0,a1,58 <_start+0x58>
+  4c:	00052023          	sw	zero,0(a0)
+  50:	00450513          	add	a0,a0,4
+  54:	feb56ce3          	bltu	a0,a1,4c <_start+0x4c>
+  58:	178000ef          	jal	1d0 <main>
+  5c:	0000006f          	j	5c <_start+0x5c>
+
+00000060 <delay>:
+  60:	ff010113          	add	sp,sp,-16 # 20003ff0 <__global_pointer$+0x37f0>
+  64:	00012623          	sw	zero,12(sp)
+  68:	00c12783          	lw	a5,12(sp)
+  6c:	00a7fc63          	bgeu	a5,a0,84 <delay+0x24>
+  70:	00c12783          	lw	a5,12(sp)
+  74:	00178793          	add	a5,a5,1
+  78:	00f12623          	sw	a5,12(sp)
+  7c:	00c12783          	lw	a5,12(sp)
+  80:	fea7e8e3          	bltu	a5,a0,70 <delay+0x10>
+  84:	01010113          	add	sp,sp,16
+  88:	00008067          	ret
+
+0000008c <delay_2>:
+  8c:	ff010113          	add	sp,sp,-16
+  90:	00012423          	sw	zero,8(sp)
+  94:	00812783          	lw	a5,8(sp)
+  98:	04a7f063          	bgeu	a5,a0,d8 <delay_2+0x4c>
+  9c:	3b9ad737          	lui	a4,0x3b9ad
+  a0:	9ff70713          	add	a4,a4,-1537 # 3b9ac9ff <_stack_top+0x1b9a89ff>
+  a4:	00012623          	sw	zero,12(sp)
+  a8:	00c12783          	lw	a5,12(sp)
+  ac:	00f76c63          	bltu	a4,a5,c4 <delay_2+0x38>
+  b0:	00c12783          	lw	a5,12(sp)
+  b4:	00178793          	add	a5,a5,1
+  b8:	00f12623          	sw	a5,12(sp)
+  bc:	00c12783          	lw	a5,12(sp)
+  c0:	fef778e3          	bgeu	a4,a5,b0 <delay_2+0x24>
+  c4:	00812783          	lw	a5,8(sp)
+  c8:	00178793          	add	a5,a5,1
+  cc:	00f12423          	sw	a5,8(sp)
+  d0:	00812783          	lw	a5,8(sp)
+  d4:	fca7e8e3          	bltu	a5,a0,a4 <delay_2+0x18>
+  d8:	01010113          	add	sp,sp,16
+  dc:	00008067          	ret
+
+000000e0 <uart_init>:
+  e0:	300007b7          	lui	a5,0x30000
+  e4:	03600713          	li	a4,54
+  e8:	00e7a623          	sw	a4,12(a5) # 3000000c <_stack_top+0xfffc00c>
+  ec:	00300713          	li	a4,3
+  f0:	00e7a423          	sw	a4,8(a5)
+  f4:	00008067          	ret
+
+000000f8 <uart_putchar>:
+  f8:	30000737          	lui	a4,0x30000
+  fc:	00472783          	lw	a5,4(a4) # 30000004 <_stack_top+0xfffc004>
+ 100:	0027f793          	and	a5,a5,2
+ 104:	fe078ce3          	beqz	a5,fc <uart_putchar+0x4>
+ 108:	00a72023          	sw	a0,0(a4)
+ 10c:	00008067          	ret
+
+00000110 <_write>:
+ 110:	00060513          	mv	a0,a2
+ 114:	02c05463          	blez	a2,13c <_write+0x2c>
+ 118:	00c58833          	add	a6,a1,a2
+ 11c:	30000737          	lui	a4,0x30000
+ 120:	0005c683          	lbu	a3,0(a1)
+ 124:	00472783          	lw	a5,4(a4) # 30000004 <_stack_top+0xfffc004>
+ 128:	0027f793          	and	a5,a5,2
+ 12c:	fe078ce3          	beqz	a5,124 <_write+0x14>
+ 130:	00d72023          	sw	a3,0(a4)
+ 134:	00158593          	add	a1,a1,1
+ 138:	feb814e3          	bne	a6,a1,120 <_write+0x10>
+ 13c:	00008067          	ret
+
+00000140 <_exit>:
+ 140:	0000006f          	j	140 <_exit>
+
+00000144 <_close>:
+ 144:	fff00513          	li	a0,-1
+ 148:	00008067          	ret
+
+0000014c <_fstat>:
+ 14c:	000027b7          	lui	a5,0x2
+ 150:	00f5a223          	sw	a5,4(a1)
+ 154:	00000513          	li	a0,0
+ 158:	00008067          	ret
+
+0000015c <_isatty>:
+ 15c:	00100513          	li	a0,1
+ 160:	00008067          	ret
+
+00000164 <_lseek>:
+ 164:	00000513          	li	a0,0
+ 168:	00008067          	ret
+
+0000016c <_read>:
+ 16c:	00000513          	li	a0,0
+ 170:	00008067          	ret
+
+00000174 <_kill>:
+ 174:	fff00513          	li	a0,-1
+ 178:	00008067          	ret
+
+0000017c <_getpid>:
+ 17c:	00100513          	li	a0,1
+ 180:	00008067          	ret
+
+00000184 <time>:
+ 184:	00050793          	mv	a5,a0
+ 188:	c0002573          	rdcycle	a0
+ 18c:	00078663          	beqz	a5,198 <time+0x14>
+ 190:	00a7a023          	sw	a0,0(a5) # 2000 <_sidata+0x1dd4>
+ 194:	0007a223          	sw	zero,4(a5)
+ 198:	00000593          	li	a1,0
+ 19c:	00008067          	ret
+
+000001a0 <_sbrk>:
+ 1a0:	20000737          	lui	a4,0x20000
+ 1a4:	00072783          	lw	a5,0(a4) # 20000000 <heap_end>
+ 1a8:	00078a63          	beqz	a5,1bc <_sbrk+0x1c>
+ 1ac:	00a78533          	add	a0,a5,a0
+ 1b0:	00a72023          	sw	a0,0(a4)
+ 1b4:	00078513          	mv	a0,a5
+ 1b8:	00008067          	ret
+ 1bc:	80418793          	add	a5,gp,-2044 # 20000004 <_ebss>
+ 1c0:	00a78533          	add	a0,a5,a0
+ 1c4:	00a72023          	sw	a0,0(a4)
+ 1c8:	00078513          	mv	a0,a5
+ 1cc:	00008067          	ret
+
+000001d0 <main>:
+ 1d0:	000407b7          	lui	a5,0x40
+ 1d4:	30030737          	lui	a4,0x30030
+ 1d8:	fff78793          	add	a5,a5,-1 # 3ffff <_sidata+0x3fdd3>
+ 1dc:	00f72223          	sw	a5,4(a4) # 30030004 <_stack_top+0x1002c004>
+ 1e0:	00008637          	lui	a2,0x8
+ 1e4:	002dc737          	lui	a4,0x2dc
+ 1e8:	ff010113          	add	sp,sp,-16
+ 1ec:	00000693          	li	a3,0
+ 1f0:	fff60613          	add	a2,a2,-1 # 7fff <_sidata+0x7dd3>
+ 1f4:	300305b7          	lui	a1,0x30030
+ 1f8:	6bf70713          	add	a4,a4,1727 # 2dc6bf <_sidata+0x2dc493>
+ 1fc:	00c6f7b3          	and	a5,a3,a2
+ 200:	00f5a423          	sw	a5,8(a1) # 30030008 <_stack_top+0x1002c008>
+ 204:	00012623          	sw	zero,12(sp)
+ 208:	00c12783          	lw	a5,12(sp)
+ 20c:	00168693          	add	a3,a3,1
+ 210:	fef766e3          	bltu	a4,a5,1fc <main+0x2c>
+ 214:	00c12783          	lw	a5,12(sp)
+ 218:	00178793          	add	a5,a5,1
+ 21c:	00f12623          	sw	a5,12(sp)
+ 220:	00c12783          	lw	a5,12(sp)
+ 224:	fef778e3          	bgeu	a4,a5,214 <main+0x44>
+ 228:	fd5ff06f          	j	1fc <main+0x2c>

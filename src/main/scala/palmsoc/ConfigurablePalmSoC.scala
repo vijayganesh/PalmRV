@@ -27,7 +27,7 @@ case class ConfigurablePalmSoCConfig(
  */
 class ConfigurablePalmSoC(
   val socConfig: ConfigurablePalmSoCConfig = ConfigurablePalmSoCConfig(),
-  val bootromInit: Option[Seq[UInt]] = None
+  val bootromInit: Option[String] = None
 ) extends Module {
   val io = IO(new Bundle {
     // Debug and monitoring outputs
@@ -154,8 +154,8 @@ class ConfigurablePalmSoC(
   
   // 3. Connect Main Crossbar Slaves
   
-  // Slave 0: Boot ROM (4 KB / 1K words)
-  val bootrom = Module(new BootROM_AXI(axiConfig, 1024, bootromInit))
+  // Slave 0: Boot ROM (128 KB / 32K words)
+  val bootrom = Module(new BootROM_AXI(axiConfig, 32768, bootromInit))
   connectAxi(bootrom.io.axi, mainXbar.io.slaves(0))
   
   // Slave 1: Flash (Tied off)
@@ -253,7 +253,7 @@ class ConfigurablePalmSoC(
   // DMA Master
   connectAxiMaster(dma.io.axi_master, mainXbar.io.masters(1))
   
-  val sBridgeIdle :: sBridgeImemRead :: sBridgeImemWait :: sBridgeImemDeliver :: sBridgeDmemWriteAddr :: sBridgeDmemWriteData :: sBridgeDmemWriteResp :: sBridgeDmemReadAddr :: sBridgeDmemReadData :: sBridgeDmemDeliver :: Nil = Enum(10)
+  val sBridgeIdle :: sBridgeImemRead :: sBridgeImemWait :: sBridgeDmemWriteAddr :: sBridgeDmemWriteData :: sBridgeDmemWriteResp :: sBridgeDmemReadAddr :: sBridgeDmemReadData :: Nil = Enum(8)
   val bridgeState = RegInit(sBridgeIdle)
   
   // AXI address and write registers
@@ -261,7 +261,6 @@ class ConfigurablePalmSoC(
   val dmem_addr_reg = RegInit(0.U(32.W))
   val dmem_wdata_reg = RegInit(0.U(32.W))
   val dmem_strb_reg = RegInit(0.U(4.W))
-  val dmem_just_completed = RegInit(false.B)
   
   // Default values
   cpuAxi.aw.awaddr := 0.U
@@ -287,25 +286,18 @@ class ConfigurablePalmSoC(
   core.io.dmem_rdata := core_dmem_rdata_reg
   core.io.dmem_valid := core_dmem_valid_reg
   
-  val stall_counter = RegInit(0.U(32.W))
-  when(bridgeState =/= sBridgeIdle && bridgeState === RegNext(bridgeState)) {
-    stall_counter := stall_counter + 1.U
-    when(stall_counter === 100.U) {
-      printf("BRIDGE STALL DETECTED: state=%d, imem_addr=%x, dmem_addr=%x, awvalid=%d, wvalid=%d, bvalid=%d, arvalid=%d, rvalid=%d\n",
-        bridgeState.asUInt, imem_addr_reg, dmem_addr_reg,
-        cpuAxi.aw.awvalid, cpuAxi.w.wvalid, cpuAxi.b.bvalid,
-        cpuAxi.ar.arvalid, cpuAxi.r.rvalid)
-    }
-  }.otherwise {
-    stall_counter := 0.U
+  val cpu_mem_active = core.io.dmem_write || core.io.dmem_read
+  val cpu_will_advance = core_imem_valid_reg && (!cpu_mem_active || core_dmem_valid_reg)
+  
+  when(cpu_will_advance) {
+    core_imem_valid_reg := false.B
+    core_dmem_valid_reg := false.B
   }
   
   switch(bridgeState) {
     is(sBridgeIdle) {
-      // Prioritize data memory accesses over starting a new instruction fetch
-      // Only do this if we didn't just complete a data transaction in the previous cycle,
-      // which allows the CPU pipeline to advance and retire the completed transaction.
-      when((core.io.dmem_write || core.io.dmem_read) && !dmem_just_completed) {
+      // Prioritize data memory accesses over instruction fetch
+      when(cpu_mem_active && !core_dmem_valid_reg) {
         when(core.io.dmem_write) {
           dmem_addr_reg := core.io.dmem_addr
           dmem_wdata_reg := core.io.dmem_wdata
@@ -322,9 +314,7 @@ class ConfigurablePalmSoC(
           dmem_addr_reg := core.io.dmem_addr
           bridgeState := sBridgeDmemReadAddr
         }
-      }.otherwise {
-        // Reset the retirement flag and start the next instruction fetch
-        dmem_just_completed := false.B
+      }.elsewhen(!core_imem_valid_reg) {
         imem_addr_reg := core.io.imem_addr
         bridgeState := sBridgeImemRead
       }
@@ -351,34 +341,8 @@ class ConfigurablePalmSoC(
         }.otherwise {
           core_imem_data_reg := cpuAxi.r.rdata
           core_imem_valid_reg := true.B
-          bridgeState := sBridgeImemDeliver
+          bridgeState := sBridgeIdle
         }
-      }
-    }
-    
-    is(sBridgeImemDeliver) {
-      core_imem_valid_reg := false.B
-      
-      // Immediately examine data memory transactions that might have been triggered 
-      // by the now-valid instruction (or previous instructions)
-      when(core.io.dmem_write) {
-        dmem_addr_reg := core.io.dmem_addr
-        dmem_wdata_reg := core.io.dmem_wdata
-        
-        val strb = WireDefault(0xF.U(4.W))
-        switch(core.io.dmem_size) {
-          is(0.U) { strb := (1.U << core.io.dmem_addr(1, 0)) }
-          is(1.U) { strb := (3.U << (core.io.dmem_addr(1) << 1)) }
-          is(2.U) { strb := 0xF.U }
-        }
-        dmem_strb_reg := strb
-        bridgeState := sBridgeDmemWriteAddr
-      }.elsewhen(core.io.dmem_read) {
-        dmem_addr_reg := core.io.dmem_addr
-        bridgeState := sBridgeDmemReadAddr
-      }.otherwise {
-        // Normal sequential instruction step
-        bridgeState := sBridgeIdle
       }
     }
     
@@ -406,8 +370,7 @@ class ConfigurablePalmSoC(
       
       when(cpuAxi.b.bvalid) {
         core_dmem_valid_reg := true.B
-        dmem_just_completed := true.B
-        bridgeState := sBridgeDmemDeliver
+        bridgeState := sBridgeIdle
       }
     }
     
@@ -426,14 +389,8 @@ class ConfigurablePalmSoC(
       when(cpuAxi.r.rvalid) {
         core_dmem_rdata_reg := cpuAxi.r.rdata
         core_dmem_valid_reg := true.B
-        dmem_just_completed := true.B
-        bridgeState := sBridgeDmemDeliver
+        bridgeState := sBridgeIdle
       }
-    }
-    
-    is(sBridgeDmemDeliver) {
-      core_dmem_valid_reg := false.B
-      bridgeState := sBridgeIdle
     }
   }
 }

@@ -57,8 +57,8 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
   val trap_flush = csr.io.taking_trap || memory.io.mret_out
   
   val if_id_flush = branch_flush || trap_flush
-  val ex_flush = trap_flush || hazard.io.load_use_stall
-  val mem_flush = trap_flush
+  val id_ex_flush = branch_flush || trap_flush || hazard.io.load_use_stall
+  val ex_flush = trap_flush
   
   // Stall logic
   val mem_wait_stall = (memory.io.valid_in && (memory.io.mem_read || memory.io.mem_write) && !io.dmem_valid) || !io.imem_valid
@@ -85,15 +85,16 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
   decode.io.rs1_data := regfile.io.rs1_data
   decode.io.rs2_data := regfile.io.rs2_data
   decode.io.stall := if_id_stall
-  decode.io.flush := if_id_flush
+  decode.io.flush := id_ex_flush
   
   // Hazard Detection Unit connections
   hazard.io.id_rs1 := decode.io.rs1_addr
   hazard.io.id_rs2 := decode.io.rs2_addr
   hazard.io.id_rs1_used := decode.io.rs1_used
   hazard.io.id_rs2_used := decode.io.rs2_used
-  hazard.io.ex_wb_sel := execute.io.wb_sel_out
-  hazard.io.ex_rd := execute.io.rd_addr_out
+  hazard.io.ex_wb_sel := decode.io.wb_sel
+  hazard.io.ex_rd := decode.io.rd_addr
+  hazard.io.ex_valid := decode.io.valid_out
   
   // Register file read
   regfile.io.rs1_addr := decode.io.rs1_addr
@@ -110,6 +111,7 @@ class RV32Core(val config: palmsoc.config.SoCConfig = palmsoc.config.DefaultSoCC
   execute.io.alu_src2_sel := decode.io.alu_src2_sel
   execute.io.branch := decode.io.branch
   execute.io.jump := decode.io.jump
+  execute.io.funct3_in := decode.io.funct3_out
   execute.io.mem_read_in := decode.io.mem_read
   execute.io.mem_write_in := decode.io.mem_write
   execute.io.mem_size_in := decode.io.mem_size

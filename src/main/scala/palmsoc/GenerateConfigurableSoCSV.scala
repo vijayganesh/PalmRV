@@ -21,7 +21,8 @@ object GenerateConfigurableSoCSV {
     uart: Boolean = true,
     i2c: Boolean = true,
     targetDir: String = "GeneratedSV",
-    outputFile: String = "ConfigurablePalmSoC.sv"
+    outputFile: String = "ConfigurablePalmSoC.sv",
+    hexFile: Option[String] = None
   )
 
   private def parseArgs(args: Array[String]): Config = {
@@ -39,9 +40,10 @@ object GenerateConfigurableSoCSV {
         case "i2c"           => cfg.copy(i2c = parts(1).toBoolean)
         case "targetdir"     => cfg.copy(targetDir = parts(1))
         case "outputfile"    => cfg.copy(outputFile = parts(1))
+        case "hexfile"       => cfg.copy(hexFile = Some(parts(1)))
         case other =>
           throw new IllegalArgumentException(
-            s"Unknown option '$other'. Supported: gpio, uart, i2c, targetDir, outputFile"
+            s"Unknown option '$other'. Supported: gpio, uart, i2c, targetDir, outputFile, hexFile"
           )
       }
     }
@@ -66,9 +68,10 @@ object GenerateConfigurableSoCSV {
     println(s"  - GPIO:           ${cfg.gpio}")
     println(s"  - UART:           ${cfg.uart}")
     println(s"  - I2C:            ${cfg.i2c}")
+    println(s"  - Hex File:       ${cfg.hexFile.getOrElse("None (default boot loop)")}")
 
     val sv = ChiselStage.emitSystemVerilog(
-      gen = new ConfigurablePalmSoC(socConfig),
+      gen = new ConfigurablePalmSoC(socConfig, cfg.hexFile),
       firtoolOpts = SynthesisFirtoolOpts
     )
 

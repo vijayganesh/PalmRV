@@ -42,7 +42,7 @@ class PalmSoC extends Module {
   val bootrom = Module(new BootROM_AXI(
     config = axiConfig,
     depth = 1024,  // 4KB (1K words)
-    initContent = None  // Will use default boot code
+    hexFile = None  // Will use default boot code
   ))
   val sram = Module(new SRAM_AXI(
     config = axiConfig,

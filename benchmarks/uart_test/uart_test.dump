@@ -31,7 +31,7 @@ Disassembly of section .text:
 
 0000005c <uart_init>:
       5c:	300007b7          	lui	a5,0x30000
-      60:	00200713          	li	a4,2
+      60:	03600713          	li	a4,54
       64:	00e7a623          	sw	a4,12(a5) # 3000000c <_stack_top+0xffc000c>
       68:	00300713          	li	a4,3
       6c:	00e7a423          	sw	a4,8(a5)
